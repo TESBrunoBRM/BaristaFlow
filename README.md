@@ -1,113 +1,104 @@
-# ☕ BaristaFlow
+<div align="center">
+  <img src="/BaristaFlowP/src/assets/logo.png/" alt="BaristaFlow Logo" width="120" />
 
-**BaristaFlow** es una plataforma integral diseñada para los amantes del café de especialidad. Conecta a entusiastas, baristas y educadores en un ecosistema único que combina aprendizaje, comercio y comunidad.
+  <h1>☕ BaristaFlow</h1>
 
-![BaristaFlow Banner](https://via.placeholder.com/1200x400?text=BaristaFlow+Platform)
+  <p>
+    <strong>La plataforma integral para los amantes del café de especialidad.</strong>
+    <br />
+    Conecta, aprende y descubre en un ecosistema único.
+  </p>
+
+  <p>
+    <a href="#-características-principales">Características</a> •
+    <a href="#-tecnologías-utilizadas">Tech Stack</a> •
+    <a href="#-instalación-y-configuración">Instalación</a> •
+    <a href="#-contribución">Contribuir</a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/STATUS-EN%20DESARROLLO-orange?style=for-the-badge" alt="Status" />
+    <img src="https://img.shields.io/badge/LICENCIA-MIT-green?style=for-the-badge" alt="License" />
+    <img src="https://img.shields.io/badge/VERSION-1.0.0-blue?style=for-the-badge" alt="Version" />
+  </p>
+
+  <br />
+  
+  ![BaristaFlow Banner](https://via.placeholder.com/1200x400?text=BaristaFlow+Platform)
+</div>
+
+<hr />
 
 ## 🚀 Características Principales
 
-### 🎓 Educación y Cursos
-- **Plataforma de E-learning**: Cursos estructurados desde nivel básico hasta avanzado.
-- **Roles de Educador**: Los usuarios aprobados pueden crear y gestionar sus propios cursos.
-- **Ambiente de Aprendizaje**: Interfaz dedicada para el seguimiento de lecciones y progreso.
+<table border="0">
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🎓 Educación y Cursos</h3>
+      <ul>
+        <li><strong>E-learning:</strong> Cursos desde nivel básico hasta avanzado.</li>
+        <li><strong>Roles de Educador:</strong> Creación y gestión de contenido propio.</li>
+        <li><strong>Tracking:</strong> Interfaz dedicada para seguimiento de progreso.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🛒 Tienda de Especialidad</h3>
+      <ul>
+        <li><strong>E-commerce:</strong> Venta de granos, métodos (V60, Chemex) y accesorios.</li>
+        <li><strong>Gestión:</strong> Carrito de compras y simulación de pagos.</li>
+        <li><strong>Catálogo:</strong> Filtrado avanzado de productos.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>📖 Recetario Interactivo</h3>
+      <ul>
+        <li><strong>Guías paso a paso:</strong> Tiempos, gramajes y temperaturas.</li>
+        <li><strong>Multimedia:</strong> Video tutoriales integrados en las recetas.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>👥 Comunidad</h3>
+      <ul>
+        <li><strong>Blog:</strong> Artículos, experiencias y noticias del mundo del café.</li>
+        <li><strong>Social:</strong> Perfiles de usuario, biografías y estadísticas.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-### 🛒 Tienda de Especialidad
-- **E-commerce Completo**: Venta de granos de café, métodos de extracción (V60, Chemex, etc.) y accesorios.
-- **Carrito de Compras**: Gestión de pedidos y simulación de pasarela de pagos.
-
-### 📖 Recetario Interactivo
-- **Catálogo de Recetas**: Guías paso a paso para diferentes métodos de preparación.
-- **Detalles Ricos**: Tiempos, gramajes, temperaturas y video tutoriales integrados.
-
-### 👥 Comunidad
-- **Blog Comunitario**: Espacio para compartir artículos, experiencias y noticias.
-- **Perfiles Sociales**: Seguimiento de usuarios, biografías personalizadas y estadísticas de actividad.
+<br />
 
 ## 🛠️ Tecnologías Utilizadas
 
+<div align="center">
+
 ### Frontend
-- **React 18**: Biblioteca principal de UI.
-- **TypeScript**: Para un código robusto y tipado.
-- **Vite**: Build tool de alto rendimiento.
-- **Tailwind CSS**: Framework de estilos utility-first.
-- **React Router DOM**: Navegación SPA.
-- **Context API**: Gestión de estado global (Auth, Cart).
+<img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+<img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+<img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
+<img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
+<img src="https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router" />
 
 ### Backend & Servicios
-- **Node.js & Express**: API REST para gestión de blogs y productos (simulado/local).
-- **Firebase**:
-  - **Authentication**: Gestión de usuarios y sesiones.
-  - **Realtime Database**: Almacenamiento de perfiles, notificaciones y datos en tiempo real.
-  - **Storage**: Alojamiento de imágenes de perfil y recursos.
+<img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+<img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express" />
+<img src="https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white" alt="Firebase" />
+
+</div>
 
 ## 📦 Instalación y Configuración
 
-Sigue estos pasos para ejecutar el proyecto localmente.
+Sigue estos pasos para levantar el entorno de desarrollo localmente.
 
 ### Prerrequisitos
-- Node.js (v16 o superior)
-- npm o yarn
-- Cuenta de Firebase configurada
+* Node.js (v16+)
+* npm o yarn
+* Cuenta de Firebase activa
 
-### 1. Clonar el Repositorio
+### 1. Clonar Repositorio
+
 ```bash
-git clone https://github.com/TESBrunoBRM/BaristaFlow.git
+git clone [https://github.com/TESBrunoBRM/BaristaFlow.git](https://github.com/TESBrunoBRM/BaristaFlow.git)
 cd BaristaFlow
-```
-
-### 2. Configurar el Frontend (`BaristaFlowP`)
-```bash
-cd BaristaFlowP
-npm install
-```
-
-**Variables de Entorno**:
-Crea un archivo `.env` en `BaristaFlowP/` con tus credenciales de Firebase:
-```env
-VITE_FIREBASE_API_KEY=tu_api_key
-VITE_FIREBASE_AUTH_DOMAIN=tu_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=tu_project_id
-VITE_FIREBASE_STORAGE_BUCKET=tu_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
-VITE_FIREBASE_APP_ID=tu_app_id
-VITE_FIREBASE_DATABASE_URL=tu_database_url
-```
-
-### 3. Configurar el Backend (`baristaflow-api`)
-```bash
-cd ../baristaflow-api
-npm install
-```
-
-### 4. Ejecutar el Proyecto
-
-**Backend (Terminal 1):**
-```bash
-cd baristaflow-api
-npm run dev
-# El servidor correrá en http://localhost:3000
-```
-
-**Frontend (Terminal 2):**
-```bash
-cd BaristaFlowP
-npm run dev
-# La aplicación abrirá en http://localhost:5173
-```
-
-## 🤝 Contribución
-
-¡Las contribuciones son bienvenidas! Por favor, abre un issue o envía un pull request para mejoras.
-
-1. Haz un Fork del proyecto.
-2. Crea tu rama de funcionalidad (`git checkout -b feature/AmazingFeature`).
-3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`).
-4. Push a la rama (`git push origin feature/AmazingFeature`).
-5. Abre un Pull Request.
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
-
----
-Desarrollado con ☕ y ❤️ por el equipo de BaristaFlow.
