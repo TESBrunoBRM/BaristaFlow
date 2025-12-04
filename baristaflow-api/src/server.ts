@@ -13,7 +13,7 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: '*', // ⚠️ Permite cualquier origen. Para mayor seguridad en producción, reemplázalo con tu dominio de Vercel (ej. 'https://baristaflow.vercel.app')
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
 
