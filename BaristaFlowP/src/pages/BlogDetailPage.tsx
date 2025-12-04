@@ -4,6 +4,7 @@ import { FaUserCircle, FaArrowLeft, FaCalendarAlt, FaExclamationTriangle, FaSpin
 import { useAuth } from '../context/AuthContext';
 import { database } from '../firebase';
 import { ref, get, set, remove } from 'firebase/database';
+import { API_BASE_URL } from '../config/api';
 
 // Define la interfaz para un post completo
 interface BlogPost {
@@ -12,9 +13,9 @@ interface BlogPost {
     content: string;
     imageUrl: string;
     author: string;
-    authorId?: string; // 🚨 Added authorId
+    authorId?: string;
     date: string;
-    htmlContent?: string; // 🚨 Propiedad opcional
+    htmlContent?: string;
 }
 
 const BlogDetailPage: React.FC = () => {
@@ -32,10 +33,9 @@ const BlogDetailPage: React.FC = () => {
 
             try {
                 setLoading(true);
-                setError(null); // Limpiar errores previos
+                setError(null);
 
-                // 🚨 CONEXIÓN REAL A LA API 🚨
-                const response = await fetch(`http://localhost:3000/api/blogs/${id}`);
+                const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`);
 
                 if (!response.ok) {
                     if (response.status === 404) {
@@ -53,15 +53,18 @@ const BlogDetailPage: React.FC = () => {
                 setPost(data);
 
                 // Check if following
-                if (user && data.authorId) {
-                    const followRef = ref(database, `users/${user.uid}/following/${data.authorId}`);
-                    const snapshot = await get(followRef);
+                if (user && data.authorId && user.uid !== data.authorId) {
+                    const followingRef = ref(database, `users/${user.uid}/following/${data.authorId}`);
+                    const snapshot = await get(followingRef);
                     setIsFollowing(snapshot.exists());
                 }
-
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Error fetching blog post:", err);
-                setError(err.message || 'No se pudo cargar el artículo.');
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError('No se pudo cargar el artículo.');
+                }
             } finally {
                 setLoading(false);
             }
@@ -186,7 +189,6 @@ const BlogDetailPage: React.FC = () => {
                         {post.content}
                     </div>
 
-                    {/* 🚨 RENDERIZADO DE CONTENIDO HTML (IFRAME) 🚨 */}
                     {post.htmlContent && (
                         <div className="mt-8 border-t pt-8">
                             <h3 className="text-xl font-bold text-[#3A1F18] mb-4">Contenido Multimedia</h3>
@@ -195,7 +197,7 @@ const BlogDetailPage: React.FC = () => {
                                     srcDoc={post.htmlContent}
                                     title="Contenido del Blog"
                                     className="w-full h-[400px] md:h-[500px]"
-                                    sandbox="allow-scripts allow-same-origin allow-presentation" // Permisos para video players
+                                    sandbox="allow-scripts allow-same-origin allow-presentation"
                                     style={{ border: 'none' }}
                                 />
                             </div>

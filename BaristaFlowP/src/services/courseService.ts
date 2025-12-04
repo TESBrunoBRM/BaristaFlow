@@ -1,5 +1,5 @@
-// src/services/courseService.ts
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 // Definición de la interfaz Course
 export interface Course {
@@ -16,7 +16,7 @@ export interface Course {
     htmlContent?: string; // Contenido HTML personalizado
 }
 
-const API_URL = 'http://localhost:3000/api/courses';
+const API_URL = `${API_BASE_URL}/api/courses`;
 
 export const courseService = {
     // 1. Crear Curso

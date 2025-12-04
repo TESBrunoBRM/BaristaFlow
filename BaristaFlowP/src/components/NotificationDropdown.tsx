@@ -27,9 +27,9 @@ const NotificationDropdown: React.FC = () => {
         const unsubscribe = onValue(notificationsRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                const loadedNotifications = Object.entries(data).map(([key, value]: [string, any]) => ({
+                const loadedNotifications = Object.entries(data).map(([key, value]) => ({
                     id: key,
-                    ...value
+                    ...(value as Omit<Notification, 'id'>)
                 }));
                 // Sort by newest first
                 loadedNotifications.sort((a, b) => b.timestamp - a.timestamp);
@@ -62,7 +62,7 @@ const NotificationDropdown: React.FC = () => {
 
     const markAllAsRead = async () => {
         if (!user) return;
-        const updates: any = {};
+        const updates: Record<string, boolean> = {};
         notifications.forEach(n => {
             if (!n.read) {
                 updates[`notifications/${user.uid}/${n.id}/read`] = true;

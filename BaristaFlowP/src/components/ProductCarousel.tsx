@@ -1,10 +1,10 @@
-// src/components/ProductCarousel.tsx
 import React, { useEffect, useState } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import type { Product } from '../types/product';
 import { FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
 
 const ProductCarousel: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -16,7 +16,7 @@ const ProductCarousel: React.FC = () => {
       try {
         setLoading(true);
         // 🚨 Fetching from the API
-        const response = await fetch('http://localhost:3000/api/products');
+        const response = await fetch(`${API_BASE_URL}/api/products`);
 
         if (!response.ok) {
           throw new Error('Error al cargar productos desde la API');

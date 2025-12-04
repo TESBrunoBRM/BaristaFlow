@@ -2,8 +2,11 @@
 export interface BlogPost {
   id: number;
   title: string;
-  image: string;
+  imageUrl: string;
   excerpt: string;
   author: string;
+  authorId?: string;
   date: string;
+  content?: string;
+  htmlContent?: string;
 }

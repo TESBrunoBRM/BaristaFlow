@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaBookReader, FaPlayCircle, FaCheckCircle, FaChalkboardTeacher, FaSpinner, FaFileUpload, FaExclamationTriangle, FaPlusCircle, FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 // Definición del tipo de Curso
 interface Course {
@@ -39,7 +40,7 @@ const LearningEnvironment: React.FC = () => {
 
         // B. Cursos Creados (Educador)
         if (isEducator) {
-          const response = await fetch('http://localhost:3000/api/courses');
+          const response = await fetch(`${API_BASE_URL}/api/courses`);
 
           if (!response.ok) {
             throw new Error('Error al conectar con el servidor de cursos.');

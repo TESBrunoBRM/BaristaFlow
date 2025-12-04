@@ -1,8 +1,8 @@
-// src/pages/CommunityPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaSpinner, FaPlusCircle } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
 
 interface BlogPost {
     id: number;
@@ -29,7 +29,7 @@ const CommunityPage: React.FC = () => {
                 setLoading(true);
                 setError(null);
 
-                const response = await fetch('http://localhost:3000/api/blogs');
+                const response = await fetch(`${API_BASE_URL}/api/blogs`);
 
                 if (!response.ok) {
                     throw new Error(`El servidor respondió con un error ${response.status}.`);
@@ -37,15 +37,14 @@ const CommunityPage: React.FC = () => {
 
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error('El servidor no devolvió una respuesta JSON válida.');
+                    throw new Error('Respuesta inválida del servidor (no es JSON).');
                 }
 
-                const data: BlogPost[] = await response.json();
+                const data = await response.json();
                 setPosts(data);
-
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Error al cargar los blogs:", err);
-                setError('Error de conexión: El servidor de API (localhost:3000) no respondió o el endpoint /api/blogs falló.');
+                setError(`Error de conexión: El servidor de API (${API_BASE_URL}) no respondió o el endpoint /api/blogs falló.`);
             } finally {
                 setLoading(false);
             }

@@ -1,5 +1,5 @@
-// src/pages/ContactPage.tsx
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 const ContactPage: React.FC = () => {
     // Definición de estados
@@ -15,7 +15,7 @@ const ContactPage: React.FC = () => {
         setStatus('submitting');
 
         // Endpoint de nuestra API local
-        const apiUrl = 'http://localhost:3000/api/contact';
+        const apiUrl = `${API_BASE_URL}/api/contact`;
 
         const formData = { name, email, subject, category, message };
 

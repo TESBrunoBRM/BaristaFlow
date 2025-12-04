@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import DropdownMenu from './DropdownMenu';
 import { FaShoppingCart, FaUserCircle, FaSignOutAlt, FaBars, FaTimes, FaCoffee, FaSearch } from 'react-icons/fa';
@@ -24,6 +24,7 @@ const Header: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -73,11 +74,30 @@ const Header: React.FC = () => {
     useEffect(() => {
         setIsMobileMenuOpen(false);
         setSuggestions([]);
+        setSearchTerm('');
     }, [location]);
 
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setSearchTerm(val);
+        if (val.length > 2) {
+            fetchSuggestions(val);
+        } else {
+            setSuggestions([]);
+        }
+    };
+
+    const handleSearchSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+            setSuggestions([]);
+        }
     };
 
     const navLinks = [
@@ -123,78 +143,60 @@ const Header: React.FC = () => {
                     </ul>
                 </nav>
 
-                {/* Acciones (Búsqueda, Carrito, Auth, Mobile Toggle) */}
-                <div className="flex items-center space-x-4">
+                {/* Search Bar */}
+                <div className="hidden lg:block relative mx-4">
+                    <form onSubmit={handleSearchSubmit} className="relative">
+                        <input
+                            type="text"
+                            name="search"
+                            value={searchTerm}
+                            autoComplete="off"
+                            onChange={handleSearchChange}
+                            placeholder="Buscar..."
+                            className="bg-white/10 border border-white/20 rounded-full py-1.5 px-4 pl-10 text-sm text-white placeholder-gray-300 focus:outline-none focus:bg-white/20 focus:border-amber-400 transition-all w-48 focus:w-64"
+                        />
+                        <button type="submit" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white">
+                            <FaSearch />
+                        </button>
+                    </form>
 
-                    {/* Barra de Búsqueda (Desktop) */}
-                    <div className="hidden lg:block relative group">
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            // @ts-ignore
-                            const query = e.target.elements.search.value;
-                            if (query.trim()) {
-                                navigate(`/search?q=${encodeURIComponent(query)}`);
-                                setSuggestions([]);
-                            }
-                        }}>
-                            <div className="relative">
-                                <input
-                                    name="search"
-                                    type="text"
-                                    placeholder="Buscar..."
-                                    autoComplete="off"
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val.length > 2) {
-                                            fetchSuggestions(val);
-                                        } else {
-                                            setSuggestions([]);
-                                        }
-                                    }}
-                                    className="bg-white/10 border border-white/20 rounded-full py-1.5 px-4 pl-10 text-sm text-white placeholder-gray-300 focus:outline-none focus:bg-white/20 focus:border-amber-400 transition-all w-48 focus:w-64"
-                                />
-                                <button type="submit" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white">
-                                    <FaSearch />
-                                </button>
-                            </div>
-                        </form>
-
-                        {/* Suggestions Dropdown */}
-                        {suggestions.length > 0 && (
-                            <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 text-gray-800">
-                                <ul>
-                                    {suggestions.map((s) => (
-                                        <li key={`${s.type}-${s.id}`} className="border-b border-gray-50 last:border-0">
-                                            <Link
-                                                to={s.link}
-                                                className="px-4 py-3 hover:bg-amber-50 transition-colors flex items-center gap-3"
-                                                onClick={() => setSuggestions([])}
-                                            >
-                                                <img src={s.image || 'https://via.placeholder.com/40'} alt={s.title} className="w-8 h-8 rounded-full object-cover" />
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold text-gray-800 truncate">{s.title}</p>
-                                                    <p className="text-xs text-gray-500 capitalize">{s.type === 'user' ? 'Usuario' : s.type}</p>
-                                                </div>
-                                            </Link>
-                                        </li>
-                                    ))}
-                                    <li className="bg-gray-50">
-                                        <button
-                                            onClick={() => {
-                                                const input = document.querySelector('input[name="search"]') as HTMLInputElement;
-                                                if (input && input.value) navigate(`/search?q=${encodeURIComponent(input.value)}`);
-                                                setSuggestions([]);
-                                            }}
-                                            className="w-full text-center py-2 text-xs text-amber-600 font-bold hover:underline"
+                    {/* Suggestions Dropdown */}
+                    {suggestions.length > 0 && (
+                        <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 text-gray-800">
+                            <ul>
+                                {suggestions.map((s) => (
+                                    <li key={`${s.type}-${s.id}`} className="border-b border-gray-50 last:border-0">
+                                        <Link
+                                            to={s.link}
+                                            className="px-4 py-3 hover:bg-amber-50 transition-colors flex items-center gap-3"
+                                            onClick={() => setSuggestions([])}
                                         >
-                                            Ver todos los resultados
-                                        </button>
+                                            <img src={s.image || 'https://via.placeholder.com/40'} alt={s.title} className="w-8 h-8 rounded-full object-cover" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-gray-800 truncate">{s.title}</p>
+                                                <p className="text-xs text-gray-500 capitalize">{s.type === 'user' ? 'Usuario' : s.type}</p>
+                                            </div>
+                                        </Link>
                                     </li>
-                                </ul>
-                            </div>
-                        )}
-                    </div>
+                                ))}
+                                <li className="bg-gray-50">
+                                    <button
+                                        onClick={() => {
+                                            if (searchTerm) navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+                                            setSuggestions([]);
+                                        }}
+                                        className="w-full text-center py-2 text-xs text-amber-600 font-bold hover:underline"
+                                    >
+                                        Ver todos los resultados
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
 
+                {/* Right Side Actions */}
+                <div className="flex items-center space-x-4">
                     {/* Notificaciones */}
                     {user && <NotificationDropdown />}
 

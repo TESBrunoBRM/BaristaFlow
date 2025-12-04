@@ -1,9 +1,9 @@
-// src/pages/ProductsPage.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import type { Product } from '../types/product';
 import { FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
 
 const ProductsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -17,7 +17,7 @@ const ProductsPage: React.FC = () => {
       try {
         setLoading(true);
         // Fetch desde la API local
-        const response = await fetch('http://localhost:3000/api/products');
+        const response = await fetch(`${API_BASE_URL}/api/products`);
 
         if (!response.ok) {
           throw new Error('Error al cargar los productos');

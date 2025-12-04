@@ -4,10 +4,15 @@ import { FaSearch, FaUser, FaBox, FaBook, FaNewspaper, FaSpinner } from 'react-i
 import axios from 'axios';
 import { database } from '../firebase';
 import { ref, get } from 'firebase/database';
+
+
+import type { BlogPost } from '../types/blog';
+import type { Product } from '../types/product';
 import { courseService } from '../services/courseService';
+import { API_BASE_URL } from '../config/api';
 
 interface SearchResult {
-    id: string;
+    id: string | number;
     title: string; // Name for users/products, Title for blogs/courses
     description?: string;
     image?: string;
@@ -61,11 +66,13 @@ const SearchPage: React.FC = () => {
                 });
             }
 
+
+
             // 2. Search Blogs (API)
-            const blogsResponse = await axios.get('http://localhost:3000/api/blogs');
+            const blogsResponse = await axios.get<BlogPost[]>(`${API_BASE_URL}/api/blogs`);
             const blogs = blogsResponse.data;
-            blogs.forEach((blog: any) => {
-                if (blog.title.toLowerCase().includes(lowerTerm) || blog.content?.toLowerCase().includes(lowerTerm)) {
+            blogs.forEach((blog) => {
+                if (blog.title.toLowerCase().includes(lowerTerm) || blog.content?.toLowerCase().includes(lowerTerm) || blog.excerpt?.toLowerCase().includes(lowerTerm)) {
                     allResults.push({
                         id: blog.id,
                         title: blog.title,
@@ -78,9 +85,9 @@ const SearchPage: React.FC = () => {
             });
 
             // 3. Search Products (API)
-            const productsResponse = await axios.get('http://localhost:3000/api/products');
+            const productsResponse = await axios.get<Product[]>(`${API_BASE_URL}/api/products`);
             const products = productsResponse.data;
-            products.forEach((product: any) => {
+            products.forEach((product) => {
                 if (product.name.toLowerCase().includes(lowerTerm) || product.description.toLowerCase().includes(lowerTerm)) {
                     allResults.push({
                         id: product.id,
@@ -95,13 +102,13 @@ const SearchPage: React.FC = () => {
 
             // 4. Search Courses (Service)
             const courses = await courseService.getAllCourses();
-            courses.forEach((course: any) => {
+            courses.forEach((course) => {
                 if (course.title.toLowerCase().includes(lowerTerm) || course.description.toLowerCase().includes(lowerTerm)) {
                     allResults.push({
                         id: course.id,
                         title: course.title,
                         description: course.description,
-                        image: course.thumbnailUrl,
+                        image: course.image,
                         type: 'course',
                         link: `/courses/${course.id}`
                     });
@@ -163,7 +170,7 @@ const SearchPage: React.FC = () => {
                 ].map((tab) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id as 'all' | 'users' | 'blogs' | 'products' | 'courses')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all whitespace-nowrap ${activeTab === tab.id
                             ? 'bg-amber-600 text-white shadow-md'
                             : 'bg-white text-gray-600 hover:bg-amber-50 border border-gray-200'

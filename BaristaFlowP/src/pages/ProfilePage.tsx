@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -14,14 +15,84 @@ import { database, storage } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import type { BlogPost } from '../types/blog';
+import { API_BASE_URL } from '../config/api';
 
 interface UserStats {
     followers: number;
     following: number;
     coursesEnrolled: number;
 }
+
+const MyCoursesSection: React.FC = () => {
+    // const { user } = useAuth(); // Unused for now
+    const navigate = useNavigate();
+
+    // Placeholder for courses logic
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="col-span-full text-center py-8 text-gray-500">
+                <p className="mb-4">No estás inscrito en ningún curso aún.</p>
+                <button
+                    onClick={() => navigate('/courses')}
+                    className="text-amber-600 font-semibold hover:underline text-sm"
+                >
+                    Explorar cursos disponibles →
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const MyBlogsSection: React.FC = () => {
+    const { user } = useAuth();
+    const [myBlogs, setMyBlogs] = useState<BlogPost[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            if (!user) return;
+            try {
+                const response = await axios.get<BlogPost[]>(`${API_BASE_URL}/api/blogs`);
+                // Filter blogs by authorId if available, or author name as fallback
+                const userBlogs = response.data.filter(blog =>
+                    (blog.authorId && blog.authorId === user.uid) ||
+                    (!blog.authorId && blog.author === user.displayName)
+                );
+                setMyBlogs(userBlogs);
+            } catch (error) {
+                console.error("Error fetching blogs:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBlogs();
+    }, [user]);
+
+    if (loading) return <div className="text-center py-4"><FaSpinner className="animate-spin inline" /> Cargando publicaciones...</div>;
+
+    if (myBlogs.length === 0) {
+        return <p className="text-gray-500 text-center py-4">No has publicado ningún blog aún.</p>;
+    }
+
+    return (
+        <div className="grid grid-cols-1 gap-4">
+            {myBlogs.map(blog => (
+                <div key={blog.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center">
+                    <div>
+                        <h3 className="font-bold text-amber-900">{blog.title}</h3>
+                        <p className="text-xs text-gray-500">{blog.date}</p>
+                    </div>
+                    <Link to={`/community/${blog.id}`} className="text-amber-600 hover:text-amber-700 text-sm font-semibold">
+                        Ver
+                    </Link>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const ProfilePage: React.FC = () => {
     const { user, logout, userRole } = useAuth();
@@ -46,24 +117,15 @@ const ProfilePage: React.FC = () => {
         const unsubscribe = onValue(userRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                setStats({
+                    followers: data.followers ? Object.keys(data.followers).length : 0,
+                    following: data.following ? Object.keys(data.following).length : 0,
+                    coursesEnrolled: data.coursesEnrolled || 0,
+                });
                 setDisplayName(data.username || user.displayName || 'Usuario BaristaFlow');
                 setDescription(data.description || '¡Hola! Me encanta el café.');
                 setNewName(data.username || user.displayName || 'Usuario BaristaFlow');
                 setBio(data.description || '¡Hola! Me encanta el café.');
-
-                // Helper to count followers/following correctly
-                const count = (val: any) => {
-                    if (!val) return 0;
-                    if (typeof val === 'number') return val;
-                    if (typeof val === 'object') return Object.keys(val).length;
-                    return 0;
-                };
-
-                setStats({
-                    followers: count(data.followers),
-                    following: count(data.following),
-                    coursesEnrolled: data.coursesEnrolled || 0,
-                });
             } else {
                 setDisplayName(user.displayName || 'Usuario BaristaFlow');
                 setDescription('¡Hola! Me encanta el café.');
@@ -107,13 +169,13 @@ const ProfilePage: React.FC = () => {
 
         const MAX_SIZE_MB = 1;
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-            alert(`El archivo es demasiado grande. Máximo permitido: ${MAX_SIZE_MB}MB.`);
+            alert(`El archivo es demasiado grande.Máximo permitido: ${MAX_SIZE_MB} MB.`);
             return;
         }
 
         setUploading(true);
         try {
-            const fileRef = storageRef(storage, `profile_photos/${user.uid}/profile_${Date.now()}`);
+            const fileRef = storageRef(storage, `profile_photos / ${user.uid}/profile_${Date.now()}`);
             await uploadBytes(fileRef, file);
             const photoURL = await getDownloadURL(fileRef);
 
@@ -125,95 +187,10 @@ const ProfilePage: React.FC = () => {
             window.location.reload();
         } catch (error) {
             console.error('Error al subir la foto:', error);
-            alert('Error al subir la foto. Revisa las reglas de Storage.');
+            alert('Error al subir la imagen. Intenta de nuevo.');
         } finally {
             setUploading(false);
         }
-    };
-
-    // --- SECCIÓN MIS PUBLICACIONES ---
-    const MyBlogsSection = () => {
-        const [myBlogs, setMyBlogs] = React.useState<any[]>([]);
-
-        React.useEffect(() => {
-            const fetchMyBlogs = async () => {
-                try {
-                    const response = await axios.get('http://localhost:3000/api/blogs');
-                    const allBlogs = response.data;
-                    const userBlogs = allBlogs.filter((blog: any) => blog.authorId === user?.uid);
-                    setMyBlogs(userBlogs);
-                } catch (error) {
-                    console.error("Error fetching user blogs:", error);
-                }
-            };
-            if (user) {
-                fetchMyBlogs();
-            }
-        }, [user]);
-
-        if (myBlogs.length === 0) {
-            return (
-                <div className="text-center py-10 bg-white rounded-xl shadow-sm border border-amber-100">
-                    <p className="text-amber-800 mb-4">Aún no has publicado ningún blog.</p>
-                    <button
-                        onClick={() => navigate('/create-blog')}
-                        className="px-6 py-2 bg-amber-600 text-white rounded-full hover:bg-amber-700 transition-colors"
-                    >
-                        Crear mi primer post
-                    </button>
-                </div>
-            );
-        }
-
-        return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {myBlogs.map((blog) => (
-                    <div key={blog.id} className="bg-white rounded-xl shadow-md overflow-hidden border border-amber-100 hover:shadow-lg transition-shadow">
-                        <img src={blog.imageUrl} alt={blog.title} className="w-full h-40 object-cover" />
-                        <div className="p-4">
-                            <h3 className="font-bold text-lg text-amber-900 mb-2 truncate">{blog.title}</h3>
-                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">{blog.excerpt}</p>
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs text-gray-500">{blog.date}</span>
-                                <button
-                                    onClick={() => navigate(`/edit-blog/${blog.id}`)}
-                                    className="px-4 py-1.5 bg-amber-100 text-amber-800 text-sm rounded-full hover:bg-amber-200 transition-colors font-medium"
-                                >
-                                    Editar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
-    // --- SECCIÓN MIS CURSOS ---
-    const MyCoursesSection = () => {
-        // TODO: Implementar fetch de cursos reales del usuario
-        // Por ahora, mostramos estado vacío para cumplir con "solo datos reales"
-        const myCourses: any[] = [];
-
-        if (myCourses.length === 0) {
-            return (
-                <div className="text-center py-8 bg-amber-50 rounded-xl border border-amber-100">
-                    <p className="text-amber-800 mb-2">No tienes cursos activos por el momento.</p>
-                    <button
-                        onClick={() => navigate('/courses')}
-                        className="text-amber-600 font-semibold hover:underline text-sm"
-                    >
-                        Explorar cursos disponibles →
-                    </button>
-                </div>
-            );
-        }
-
-        return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Aquí irían los cursos reales mapeados */}
-            </div>
-        );
     };
 
     if (!user || loadingData) {
@@ -222,8 +199,6 @@ const ProfilePage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-amber-50 font-sans">
-            {/* Header eliminado para evitar duplicados (ya está en App.tsx) */}
-
             {/* Header Background */}
             <div className="h-64 bg-linear-to-r from-[#3A1F18] to-amber-900 relative">
                 <div className="absolute inset-0 bg-black/20"></div>
@@ -365,7 +340,6 @@ const ProfilePage: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {/* Footer eliminado para evitar duplicados */}
         </div>
     );
 };

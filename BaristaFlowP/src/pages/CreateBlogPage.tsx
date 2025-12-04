@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 import axios from 'axios';
 
 const CreateBlogPage: React.FC = () => {
@@ -19,7 +20,7 @@ const CreateBlogPage: React.FC = () => {
         if (isEditing) {
             const fetchBlog = async () => {
                 try {
-                    const response = await axios.get(`http://localhost:3000/api/blogs/${id}`);
+                    const response = await axios.get(`${API_BASE_URL}/api/blogs/${id}`);
                     const blog = response.data;
                     setTitle(blog.title);
                     setContent(blog.content);
@@ -64,10 +65,10 @@ const CreateBlogPage: React.FC = () => {
             };
 
             if (isEditing) {
-                await axios.put(`http://localhost:3000/api/blogs/${id}`, blogData);
+                await axios.put(`${API_BASE_URL}/api/blogs/${id}`, blogData);
                 alert("Blog actualizado con éxito!");
             } else {
-                await axios.post('http://localhost:3000/api/blogs', blogData);
+                await axios.post(`${API_BASE_URL}/api/blogs`, blogData);
                 alert("Blog publicado con éxito!");
             }
             navigate('/community');

@@ -13,20 +13,13 @@ const CoursesPage: React.FC = () => {
 
     const isEducator = userRole === 'educator_approved';
 
-    // ------------------------------------
-    // LÓGICA DE CARGA DE DATOS REALES DESDE FIREBASE
-    // ------------------------------------
     useEffect(() => {
         const fetchCourses = async () => {
             try {
                 setLoading(true);
-                setError(null);
-
-                // Usamos el servicio de Firebase en lugar de la API Express
                 const data = await courseService.getAllCourses();
                 setCourses(data);
-
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Error al cargar los cursos:", err);
                 setError('No se pudo conectar con el servidor de cursos. Por favor intenta más tarde.');
             } finally {
@@ -36,8 +29,6 @@ const CoursesPage: React.FC = () => {
 
         fetchCourses();
     }, []);
-
-    // --- RENDERIZADO DE ESTADOS ---
 
     if (loading) {
         return (
@@ -60,9 +51,6 @@ const CoursesPage: React.FC = () => {
         );
     }
 
-    // ------------------------------------
-    // VISTA PRINCIPAL
-    // ------------------------------------
     return (
         <div className="container mx-auto px-4 py-16">
             <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
