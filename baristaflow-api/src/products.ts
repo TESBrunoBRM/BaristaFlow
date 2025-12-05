@@ -15,7 +15,7 @@ const products: Product[] = [
     {
         id: 101,
         name: 'Café de Origen Único Etiopía',
-        image: 'https://images.unsplash.com/photo-1518832549298-5c4d37149a46?q=80&w=2940&auto=format&fit=crop',
+        image: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQzKD3nBlPRz3wI9z0pOAypH1w7Z6rwBKc1PWSnEb9bZOrCPXYwJHjGdP1L-73KAR9wqJovtoqsXOcnhpols7BdvQjcJ-xSK3oj3oRsFnuQ',
         price: '18.99',
         description: 'Bolsa de 300g con notas florales, acidez cítrica y cuerpo ligero. Tueste medio.',
         category: 'grano',
@@ -31,7 +31,7 @@ const products: Product[] = [
     {
         id: 103,
         name: 'Máquina Espresso Portátil Wacaco',
-        image: 'https://images.unsplash.com/photo-1606798020811-1c5c56d787d5?q=80&w=2940&auto=format&fit=crop',
+        image: 'https://ae-pic-a1.aliexpress-media.com/kf/S963599af4b8746b4a5f9792781d82c0bA.jpg_640x640q75.jpg_.avif',
         price: '69.00',
         description: 'Perfecta para viajes. Espresso con 8 bares de presión manual.',
         category: 'maquinas',
@@ -39,7 +39,7 @@ const products: Product[] = [
     {
         id: 104,
         name: 'Molino Manual Cónico (Acero)',
-        image: 'https://images.unsplash.com/photo-1549444558-8686616086f6?q=80&w=2940&auto=format&fit=crop',
+        image: 'https://ae-pic-a1.aliexpress-media.com/kf/S43492f3905294fee9f067da86e5e07f0f.jpg_640x640q75.jpg_.avif',
         price: '49.99',
         description: 'Muelas de cerámica ajustables para molienda fina a gruesa. Diseño robusto.',
         category: 'molinos',
@@ -47,7 +47,7 @@ const products: Product[] = [
     {
         id: 105,
         name: 'V60 Dripper (Cerámica)',
-        image: 'https://images.unsplash.com/photo-1587784013446-be11df42a178?q=80&w=2940&auto=format&fit=crop',
+        image: 'https://ae-pic-a1.aliexpress-media.com/kf/S28b43a1511bc4468861600ecdffa7ca5f.jpg_960x960q75.jpg_.avif',
         price: '24.00',
         description: 'Método de filtrado rápido y limpio. Resalta las notas de los cafés claros.',
         category: 'accesorios',

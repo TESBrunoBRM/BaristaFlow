@@ -18,7 +18,7 @@ let courses: Course[] = [
     {
         id: 1,
         title: 'Maestría en Prensa Francesa',
-        image: 'https://images.unsplash.com/photo-1541167760496-1c42023d06e2?q=80&w=2940&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1639906512494-dd4a536abc4e?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         description: 'Aprende a controlar el tiempo y la molienda para obtener un café con cuerpo y aceites naturales perfectos.',
         price: '19.99',
         duration: '2 semanas',
@@ -27,7 +27,7 @@ let courses: Course[] = [
     {
         id: 2,
         title: 'El Arte de la Moka Italiana',
-        image: 'https://images.unsplash.com/photo-1558296316-248db7480a40?q=80&w=2940&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1613410034014-18cc91dc1e1e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         description: 'Saca el máximo provecho a tu cafetera italiana. Trucos para evitar el sabor quemado y lograr un café intenso.',
         price: '24.99',
         duration: '1 semana',
@@ -45,7 +45,7 @@ let courses: Course[] = [
     {
         id: 4,
         title: 'Introducción al Filtrado V60',
-        image: 'https://images.unsplash.com/photo-1519162296433-67855539bb7c?q=80&w=2070&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1641962710781-3df076f49e26?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         description: 'Iníciate en el mundo del café de especialidad con el método de vertido. Técnica, control de temperatura y vertido.',
         price: '34.99',
         duration: '4 semanas',

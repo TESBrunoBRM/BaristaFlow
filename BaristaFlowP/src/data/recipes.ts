@@ -108,7 +108,7 @@ export const recipes: Recipe[] = [
     method: 'Filtrado',
     difficulty: 'Difícil',
     prepTime: '5 min',
-    image: 'https://images.unsplash.com/photo-1565452344054-01369143d2d2?q=80&w=2070&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1565404712759-854d786c28f1?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     description: 'La Chemex produce un café increíblemente limpio y brillante gracias a sus filtros gruesos. Ideal para compartir.',
     ingredients: [
       '40g de café (molienda media-gruesa)',
@@ -122,6 +122,6 @@ export const recipes: Recipe[] = [
       'Vierte el agua en círculos concéntricos lentos, manteniendo el nivel constante.',
       'El tiempo total debe ser de unos 4 a 5 minutos. Retira el filtro y sirve.',
     ],
-    videoUrl: 'https://www.youtube.com/embed/ikvOE-L0kK0', // James Hoffmann Chemex
+    videoUrl: 'https://www.youtube.com/embed/rU3cAt0M33A?si=xd3hwaUzbniSzlDk', // James Hoffmann Chemex
   },
 ];
