@@ -1,5 +1,5 @@
 const { db } = require('../firebase');
-const { ref, get, set, child, push } = require('firebase/database');
+const { ref, get, set, child, push, remove } = require('firebase/database');
 
 const COLLECTION_NAME = 'blogs';
 
@@ -47,37 +47,53 @@ const createBlog = async (blog: any) => {
         if (snapshot.exists()) {
             const blogs = Object.values(snapshot.val());
             // @ts-ignore
-            const maxId = Math.max(...blogs.map((b: any) => b.id || 0));
+            const maxId = blogs.length > 0 ? Math.max(...blogs.map((b: any) => parseInt(b.id) || 0)) : 0;
             newId = maxId + 1;
         }
 
         if (isNaN(newId)) newId = Date.now();
 
-        const newBlog = { ...blog, id: newId };
+        // Helper to remove undefined keys (Firebase doesn't like them)
+        const cleanUndefined = (obj: any) => {
+            const newObj = { ...obj };
+            Object.keys(newObj).forEach(key => {
+                if (newObj[key] === undefined) {
+                    delete newObj[key];
+                }
+            });
+            return newObj;
+        };
+
+        const newBlog = cleanUndefined({ ...blog, id: newId });
 
         // Guardar en /blogs/{id}
         await set(child(dbRef, newId.toString()), newBlog);
 
         // 🚨 NOTIFICAR A SEGUIDORES 🚨
-        if (blog.authorId) {
-            const followersRef = ref(db, `users/${blog.authorId}/followers`);
-            const followersSnapshot = await get(followersRef);
+        try {
+            if (blog.authorId) {
+                const followersRef = ref(db, `users/${blog.authorId}/followers`);
+                const followersSnapshot = await get(followersRef);
 
-            if (followersSnapshot.exists()) {
-                const followers = followersSnapshot.val();
-                const notificationPromises = Object.keys(followers).map(followerId => {
-                    const notifRef = child(ref(db, `notifications/${followerId}`), Date.now().toString());
-                    return set(notifRef, {
-                        type: 'new_post',
-                        message: `${blog.author} ha publicado un nuevo blog: "${blog.title}".`,
-                        link: `/community/${newId}`,
-                        read: false,
-                        timestamp: Date.now()
+                if (followersSnapshot.exists()) {
+                    const followers = followersSnapshot.val();
+                    const notificationPromises = Object.keys(followers).map(followerId => {
+                        const notifRef = child(ref(db, `notifications/${followerId}`), Date.now().toString());
+                        return set(notifRef, {
+                            type: 'new_post',
+                            message: `${blog.author} ha publicado un nuevo blog: "${blog.title}".`,
+                            link: `/community/${newId}`,
+                            read: false,
+                            timestamp: Date.now()
+                        });
                     });
-                });
-                await Promise.all(notificationPromises);
-                console.log(`Notificados ${notificationPromises.length} seguidores.`);
+                    await Promise.all(notificationPromises);
+                    console.log(`Notificados ${notificationPromises.length} seguidores.`);
+                }
             }
+        } catch (notifError) {
+            console.warn("⚠️ No se pudieron enviar notificaciones (Error de permisos/Firebase):", notifError);
+            // No lanzamos error para permitir que el blog se cree aunque fallen las notificaciones
         }
 
         return newBlog;
@@ -97,7 +113,15 @@ const updateBlog = async (id: number, blogData: any) => {
         }
 
         const existingBlog = snapshot.val();
-        const updatedBlog = { ...existingBlog, ...blogData, id }; // Ensure ID doesn't change
+        // Merge existing data with new data (including blocks)
+        const updatedBlog = {
+            ...existingBlog,
+            ...blogData,
+            id // Ensure ID doesn't change
+        };
+
+        // Remove undefined values
+        Object.keys(updatedBlog).forEach(key => updatedBlog[key] === undefined && delete updatedBlog[key]);
 
         await set(dbRef, updatedBlog);
         return updatedBlog;
@@ -107,9 +131,21 @@ const updateBlog = async (id: number, blogData: any) => {
     }
 };
 
+const deleteBlog = async (id: number | string) => {
+    try {
+        const dbRef = ref(db, `${COLLECTION_NAME}/${id}`);
+        await remove(dbRef);
+        return true;
+    } catch (error) {
+        console.error("Error deleting blog:", error);
+        throw error;
+    }
+};
+
 module.exports = {
     getBlogs,
     getBlogById,
     createBlog,
-    updateBlog
+    updateBlog,
+    deleteBlog
 };

@@ -7,11 +7,15 @@ import { useAuth } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
 import { database } from '../firebase';
 import { ref, get } from 'firebase/database';
+import { courseService } from '../services/courseService';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
+import type { BlogPost } from '../types/blog';
 
 interface Suggestion {
     id: string;
     title: string;
-    type: 'user' | 'blog' | 'product';
+    type: 'user' | 'blog' | 'product' | 'course';
     image?: string;
     link: string;
 }
@@ -35,26 +39,73 @@ const Header: React.FC = () => {
 
         try {
             // 1. Users (Firebase) - Limit to 3
-            const usersRef = ref(database, 'users');
-            const usersSnapshot = await get(usersRef);
-            if (usersSnapshot.exists()) {
-                let count = 0;
-                usersSnapshot.forEach((child) => {
-                    if (count >= 3) return;
-                    const u = child.val();
-                    const name = u.username || u.displayName || '';
-                    if (name.toLowerCase().includes(lowerTerm)) {
+            try {
+                const usersRef = ref(database, 'users');
+                const usersSnapshot = await get(usersRef);
+                if (usersSnapshot.exists()) {
+                    let count = 0;
+                    usersSnapshot.forEach((child) => {
+                        if (count >= 3) return;
+                        const u = child.val();
+                        const name = u.username || u.displayName || '';
+                        if (name.toLowerCase().includes(lowerTerm)) {
+                            results.push({
+                                id: child.key!,
+                                title: name,
+                                type: 'user',
+                                image: u.photoURL,
+                                link: `/profile` // Linking to own profile for now as public profile page logic is complex
+                            });
+                            count++;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.warn("Could not fetch user suggestions (permission denied or other error):", error);
+            }
+
+            // 2. Courses (Service) - Limit to 3
+            try {
+                const courses = await courseService.getAllCourses();
+                let courseCount = 0;
+                courses.forEach(course => {
+                    if (courseCount >= 3) return;
+                    if (course.title.toLowerCase().includes(lowerTerm)) {
                         results.push({
-                            id: child.key!,
-                            title: name,
-                            type: 'user',
-                            image: u.photoURL,
-                            link: `/profile` // Linking to own profile for now as public profile page logic is complex
+                            id: course.id,
+                            title: course.title,
+                            type: 'course',
+                            image: course.image,
+                            link: `/courses/${course.id}`
                         });
-                        count++;
+                        courseCount++;
                     }
                 });
+            } catch (e) {
+                console.error("Error fetching courses for suggestions", e);
             }
+
+            // 3. Blogs (API) - Limit to 3
+            try {
+                const blogsResponse = await axios.get<BlogPost[]>(`${API_BASE_URL}/api/blogs`);
+                let blogCount = 0;
+                blogsResponse.data.forEach(blog => {
+                    if (blogCount >= 3) return;
+                    if (blog.title.toLowerCase().includes(lowerTerm)) {
+                        results.push({
+                            id: blog.id.toString(),
+                            title: blog.title,
+                            type: 'blog',
+                            image: blog.imageUrl,
+                            link: `/community/${blog.id}`
+                        });
+                        blogCount++;
+                    }
+                });
+            } catch (e) {
+                console.error("Error fetching blogs for suggestions", e);
+            }
+
         } catch (error) {
             console.error("Error fetching suggestions:", error);
         }

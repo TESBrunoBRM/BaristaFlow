@@ -9,11 +9,21 @@ import {
     FaCheckCircle,
     FaExclamationTriangle
 } from 'react-icons/fa';
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { storage, database } from '../firebase';
+// import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'; // REMOVED
+import { database } from '../firebase';
 import { ref as dbRef, update } from 'firebase/database';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Helper to convert file to Base64
+const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
+};
 
 const EducatorApplyPage: React.FC = () => {
     const { user, userRole } = useAuth();
@@ -71,36 +81,28 @@ const EducatorApplyPage: React.FC = () => {
         setProgress(0);
 
         try {
-            const path = `verification_docs/${user.uid}/${Date.now()}_${file.name}`;
-            const fileRef = storageRef(storage, path);
-            const uploadTask = uploadBytesResumable(fileRef, file);
+            // Fake progress for UX
+            const interval = setInterval(() => {
+                setProgress(prev => Math.min(prev + 10, 90));
+            }, 200);
 
-            uploadTask.on(
-                'state_changed',
-                (snapshot) => {
-                    const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    setProgress(Math.round(pct));
-                },
-                (err) => {
-                    console.error('Error en la subida:', err);
-                    setError('Error al subir el archivo. Verifica permisos o tamaño.');
-                    setLoading(false);
-                },
-                async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            // Convert to Base64
+            const base64String = await fileToBase64(file);
 
-                    // Actualizar datos del usuario
-                    const userRef = dbRef(database, `users/${user.uid}`);
-                    await update(userRef, {
-                        role: 'educator_pending',
-                        verificationDocumentURL: downloadURL,
-                        applicationDate: new Date().toISOString(),
-                    });
+            clearInterval(interval);
+            setProgress(100);
 
-                    setUploadSuccess(true);
-                    setLoading(false);
-                }
-            );
+            // Actualizar datos del usuario en Realtime Database
+            const userRef = dbRef(database, `users/${user.uid}`);
+            await update(userRef, {
+                role: 'educator_pending',
+                verificationDocumentURL: base64String, // Storing Base64 directly
+                applicationDate: new Date().toISOString(),
+            });
+
+            setUploadSuccess(true);
+            setLoading(false);
+
         } catch (err) {
             console.error('Error general en la aplicación de educador:', err);
             setError('Ocurrió un error inesperado. Intenta nuevamente.');
@@ -201,8 +203,8 @@ const EducatorApplyPage: React.FC = () => {
                         type="submit"
                         disabled={loading}
                         className={`w-full flex items-center justify-center px-6 py-3 font-bold rounded-lg shadow-md transition-colors ${loading
-                                ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                                : 'bg-amber-500 text-[#3A1F18] hover:bg-amber-600'
+                            ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                            : 'bg-amber-500 text-[#3A1F18] hover:bg-amber-600'
                             }`}
                     >
                         {loading ? (

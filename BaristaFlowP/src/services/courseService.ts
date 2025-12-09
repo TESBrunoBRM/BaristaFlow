@@ -14,6 +14,7 @@ export interface Course {
     authorName: string;
     createdAt?: number;
     htmlContent?: string; // Contenido HTML personalizado
+    blocks?: any[]; // NEW: Structured content blocks
 }
 
 const API_URL = `${API_BASE_URL}/api/courses`;

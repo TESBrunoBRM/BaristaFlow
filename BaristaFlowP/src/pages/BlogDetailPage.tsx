@@ -1,22 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import ContentBlockRenderer from '../components/editor/ContentBlockRenderer';
 import { useParams, Link } from 'react-router-dom';
-import { FaUserCircle, FaArrowLeft, FaCalendarAlt, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
+import { FaUserCircle, FaArrowLeft, FaCalendarAlt, FaExclamationTriangle, FaSpinner, FaEllipsisV, FaEdit, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { database } from '../firebase';
 import { ref, get, set, remove } from 'firebase/database';
 import { API_BASE_URL } from '../config/api';
 
 // Define la interfaz para un post completo
-interface BlogPost {
-    id: number;
-    title: string;
-    content: string;
-    imageUrl: string;
-    author: string;
-    authorId?: string;
-    date: string;
-    htmlContent?: string;
-}
+import type { BlogPost } from '../types/blog';
 
 const BlogDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -26,6 +18,7 @@ const BlogDetailPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -161,6 +154,48 @@ const BlogDetailPage: React.FC = () => {
                                 <FaUserCircle className="mr-2 text-xl text-gray-400" />
                                 <span className="font-semibold text-gray-700">{post.author}</span>
                             </div>
+
+                            {/* Actions for Author */}
+                            {user && post.authorId === user.uid && (
+                                <div className="relative ml-auto">
+                                    <button
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
+                                    >
+                                        <FaEllipsisV />
+                                    </button>
+
+                                    {isMenuOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 overflow-hidden">
+                                            <Link
+                                                to={`/edit-blog/${post.id}`}
+                                                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                                                onClick={() => setIsMenuOpen(false)}
+                                            >
+                                                <FaEdit className="mr-3" /> Editar Publicación
+                                            </Link>
+                                            <button
+                                                onClick={async () => {
+                                                    setIsMenuOpen(false);
+                                                    if (window.confirm("¿Estás seguro de que quieres eliminar esta publicación?")) {
+                                                        try {
+                                                            await fetch(`${API_BASE_URL}/api/blogs/${post.id}`, { method: 'DELETE' });
+                                                            alert("Publicación eliminada.");
+                                                            window.location.href = '/community';
+                                                        } catch (e) {
+                                                            alert("Error al eliminar.");
+                                                        }
+                                                    }
+                                                }}
+                                                className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                            >
+                                                <FaTrash className="mr-3" /> Eliminar Publicación
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Follow Button */}
                             {user && post.authorId && user.uid !== post.authorId && (
                                 <button
@@ -185,13 +220,17 @@ const BlogDetailPage: React.FC = () => {
                         {post.title}
                     </h1>
 
-                    <div className="prose prose-lg text-gray-700 max-w-none whitespace-pre-line">
+                    <div className="prose prose-lg text-gray-700 max-w-none whitespace-pre-line mb-8">
                         {post.content}
                     </div>
 
-                    {post.htmlContent && (
+                    {/* New Secure Block Renderer */}
+                    {post.blocks && post.blocks.length > 0 ? (
+                        <ContentBlockRenderer blocks={post.blocks} />
+                    ) : post.htmlContent ? (
+                        // Fallback for legacy posts
                         <div className="mt-8 border-t pt-8">
-                            <h3 className="text-xl font-bold text-[#3A1F18] mb-4">Contenido Multimedia</h3>
+                            <h3 className="text-xl font-bold text-[#3A1F18] mb-4">Contenido Multimedia (Legacy)</h3>
                             <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-inner">
                                 <iframe
                                     srcDoc={post.htmlContent}
@@ -202,7 +241,7 @@ const BlogDetailPage: React.FC = () => {
                                 />
                             </div>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </article>
         </div>

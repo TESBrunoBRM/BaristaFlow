@@ -10,7 +10,8 @@ export interface Course {
     duration: string;
     level: 'Básico' | 'Intermedio' | 'Avanzado';
     authorId?: string;
-    htmlContent?: string; // Contenido HTML personalizado (iframe)
+    htmlContent?: string; // Legacy
+    blocks?: any[]; // NEW: Structured content blocks
 }
 
 // 🚨 Datos Iniciales (In-Memory Database)

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/BaristaFlowP/src/assets/logo.png/" alt="BaristaFlow Logo" width="120" />
+  <img src="/BaristaFlowP/src/assets/logo.png" alt="BaristaFlow Logo" width="120" />
 
   <h1>☕ BaristaFlow</h1>
 
@@ -13,7 +13,7 @@
     <a href="#-características-principales">Características</a> •
     <a href="#-tecnologías-utilizadas">Tech Stack</a> •
     <a href="#-instalación-y-configuración">Instalación</a> •
-    <a href="#-contribución">Contribuir</a>
+    <a href="#-manual-de-usuario">Manual de Usuario</a>
   </p>
 
   <p>
@@ -100,5 +100,137 @@ Sigue estos pasos para levantar el entorno de desarrollo localmente.
 ### 1. Clonar Repositorio
 
 ```bash
-git clone [https://github.com/TESBrunoBRM/BaristaFlow.git](https://github.com/TESBrunoBRM/BaristaFlow.git)
+git clone https://github.com/TESBrunoBRM/BaristaFlow.git
 cd BaristaFlow
+```
+
+### 2. Configuración del Backend (API)
+
+El backend maneja la lógica de cursos, blogs y correos.
+
+```bash
+cd baristaflow-api
+npm install
+```
+
+**Variables de Entorno (.env):**
+Crea un archivo `.env` en `baristaflow-api/` con las siguientes variables (reemplaza con tus datos):
+
+```env
+PORT=3001
+EMAIL_USER=tu_correo@gmail.com
+EMAIL_PASS=tu_contraseña_de_aplicacion
+# Firebase Config (Opcional si usas Admin SDK, pero recomendado para Client SDK)
+FIREBASE_API_KEY=tu_api_key
+FIREBASE_AUTH_DOMAIN=tu_proyecto.firebaseapp.com
+FIREBASE_DATABASE_URL=https://tu_proyecto-default-rtdb.firebaseio.com
+FIREBASE_PROJECT_ID=tu_project_id
+FIREBASE_APP_ID=tu_app_id
+```
+
+**Iniciar Backend:**
+```bash
+npm run dev
+```
+
+### 3. Configuración del Frontend
+
+La interfaz de usuario principal.
+
+```bash
+cd ../BaristaFlowP
+npm install
+```
+
+**Configuración de Firebase:**
+Asegúrate de que `src/firebase.ts` tenga la configuración correcta de tu proyecto Firebase.
+
+**Iniciar Frontend:**
+```bash
+npm run dev
+```
+La aplicación estará disponible en `http://localhost:5173`.
+
+### 4. Reglas de Firebase (Importante)
+
+Para que la aplicación funcione correctamente (especialmente la creación de cursos y blogs), debes configurar las reglas de **Realtime Database** en tu consola de Firebase:
+
+```json
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null",
+      ".indexOn": ["username", "displayName"],
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "products": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "blogs": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "courses": {
+      ".read": true,
+      ".write": true, 
+      ".indexOn": ["authorId"]
+    },
+    "orders": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}
+```
+
+---
+
+## 📘 Manual de Usuario
+
+Bienvenido a la guía oficial de **BaristaFlow**.
+
+### 1. Gestión de Cuenta
+
+*   **Registro**: Usa el formulario o inicia sesión con Google para acceder a todas las funciones.
+*   **Perfil**: En tu perfil puedes ver tus estadísticas, editar tu biografía y ver tus cursos activos.
+
+### 2. Módulos Principales
+
+#### ☕ Recetas
+Explora métodos de preparación como V60, Chemex o Espresso. Cada receta incluye pasos detallados, tiempos y videos explicativos.
+
+#### 🎓 Cursos (Rol Estudiante)
+*   Navega por el catálogo de cursos.
+*   Inscríbete para acceder al **Ambiente de Aprendizaje**.
+*   Sigue tu progreso lección por lección.
+
+#### 🛒 Tienda
+*   Compra granos de café, cafeteras y accesorios.
+*   Agrega productos al carrito y simula el proceso de pago.
+*   Recibirás un correo de confirmación (si el backend está configurado).
+
+#### 👥 Comunidad
+*   Lee blogs escritos por otros baristas.
+*   Comparte tus propias experiencias creando tus publicaciones.
+
+### 3. Manual para Educadores
+
+Si deseas compartir tu conocimiento, puedes solicitar el rol de **Educador**.
+
+1.  Ve a tu **Perfil** y selecciona **"Convertirme en Educador"**.
+2.  Una vez aprobado, tendrás acceso al **Panel de Educador**.
+3.  **Crear Curso**:
+    *   Define título, precio y nivel.
+    *   Usa el editor interactivo para agregar lecciones de texto, video o imágenes.
+    *   Publica tu curso para que otros estudiantes se inscriban.
+
+---
+
+<div align="center">
+  <p>Hecho con ☕ y ❤️ por el equipo de BaristaFlow</p>
+</div>

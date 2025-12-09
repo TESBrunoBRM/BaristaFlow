@@ -47,23 +47,27 @@ const SearchPage: React.FC = () => {
 
         try {
             // 1. Search Users (Firebase)
-            const usersRef = ref(database, 'users');
-            const usersSnapshot = await get(usersRef);
-            if (usersSnapshot.exists()) {
-                usersSnapshot.forEach((childSnapshot) => {
-                    const user = childSnapshot.val();
-                    const username = user.username || user.displayName || '';
-                    if (username.toLowerCase().includes(lowerTerm)) {
-                        allResults.push({
-                            id: childSnapshot.key!,
-                            title: username,
-                            description: user.description || 'Usuario de BaristaFlow',
-                            image: user.photoURL || 'https://via.placeholder.com/150',
-                            type: 'user',
-                            link: `/profile/${childSnapshot.key}` // Note: Profile viewing of others might need implementation
-                        });
-                    }
-                });
+            try {
+                const usersRef = ref(database, 'users');
+                const usersSnapshot = await get(usersRef);
+                if (usersSnapshot.exists()) {
+                    usersSnapshot.forEach((childSnapshot) => {
+                        const user = childSnapshot.val();
+                        const username = user.username || user.displayName || '';
+                        if (username.toLowerCase().includes(lowerTerm)) {
+                            allResults.push({
+                                id: childSnapshot.key!,
+                                title: username,
+                                description: user.description || 'Usuario de BaristaFlow',
+                                image: user.photoURL || 'https://via.placeholder.com/150',
+                                type: 'user',
+                                link: `/profile/${childSnapshot.key}`
+                            });
+                        }
+                    });
+                }
+            } catch (error) {
+                console.warn("Could not search users (permission denied or other error):", error);
             }
 
 
@@ -103,7 +107,10 @@ const SearchPage: React.FC = () => {
             // 4. Search Courses (Service)
             const courses = await courseService.getAllCourses();
             courses.forEach((course) => {
-                if (course.title.toLowerCase().includes(lowerTerm) || course.description.toLowerCase().includes(lowerTerm)) {
+                const titleMatch = course.title?.toLowerCase().includes(lowerTerm);
+                const descMatch = course.description?.toLowerCase().includes(lowerTerm);
+
+                if (titleMatch || descMatch) {
                     allResults.push({
                         id: course.id,
                         title: course.title,

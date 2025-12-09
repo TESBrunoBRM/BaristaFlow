@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { courseService } from '../services/courseService';
+import ContentBlockEditor from '../components/editor/ContentBlockEditor';
+import type { ContentBlock } from '../types/blog';
 import { FaSpinner, FaCloudUploadAlt, FaMoneyBillWave, FaClock, FaLayerGroup, FaLink, FaImage, FaSave, FaEdit } from 'react-icons/fa';
 
 const EditCoursePage: React.FC = () => {
@@ -16,6 +18,9 @@ const EditCoursePage: React.FC = () => {
     const [price, setPrice] = useState('');
     const [duration, setDuration] = useState('');
     const [level, setLevel] = useState<'Básico' | 'Intermedio' | 'Avanzado'>('Básico');
+
+    // New Blocks State
+    const [blocks, setBlocks] = useState<ContentBlock[]>([]);
 
     // Estados para manejar la imagen (Archivo o URL)
     const [imageType, setImageType] = useState<'file' | 'url'>('url');
@@ -45,6 +50,11 @@ const EditCoursePage: React.FC = () => {
                     setDuration(course.duration);
                     setLevel(course.level);
                     setImageUrl(course.image);
+
+                    // Load blocks
+                    if (course.blocks && Array.isArray(course.blocks)) {
+                        setBlocks(course.blocks);
+                    }
                 } else {
                     alert('Curso no encontrado.');
                     navigate('/educator-panel');
@@ -103,6 +113,7 @@ const EditCoursePage: React.FC = () => {
                 duration,
                 level,
                 image: finalImageUrl,
+                blocks, // NEW: Save blocks
             };
 
             // 3. Actualizar en Firebase
@@ -125,7 +136,7 @@ const EditCoursePage: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-16">
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8 md:p-12 border-t-8 border-amber-600">
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-8 md:p-12 border-t-8 border-amber-600">
                 <div className="text-center mb-10">
                     <FaEdit className="text-5xl text-amber-600 mx-auto mb-4" />
                     <h1 className="text-3xl font-extrabold text-[#3A1F18]">Editar Curso</h1>
@@ -261,6 +272,15 @@ const EditCoursePage: React.FC = () => {
                                 {imageFile && <p className="mt-2 text-sm text-green-600 font-semibold">Archivo: {imageFile.name}</p>}
                             </div>
                         )}
+                    </div>
+
+                    {/* EDITOR DE BLOQUES (Sustituye a HTML) */}
+                    <div className="bg-white p-6 rounded-2xl shadow-xl border border-amber-100">
+                        <h2 className="text-xl font-bold text-gray-800 border-b border-gray-100 pb-4 mb-6">Contenido Interactivo / Lecciones</h2>
+                        <ContentBlockEditor
+                            blocks={blocks}
+                            onChange={setBlocks}
+                        />
                     </div>
 
                     {/* Botón Submit */}

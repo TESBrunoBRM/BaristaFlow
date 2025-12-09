@@ -5,12 +5,12 @@ require('dotenv').config();
 
 // Importamos los servicios
 const blogService = require('./services/blogService');
-// TODO: Migrar coursesService también a Firestore
-const { getCourses, getCourseById, createCourse, updateCourse, deleteCourse } = require('./courses');
+const courseService = require('./services/courseService'); // NEW: Persistent service
+// const { getCourses, getCourseById, createCourse, updateCourse, deleteCourse } = require('./courses'); // OLD: In-memory
 const { products } = require('./products');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 app.use(cors({
     origin: '*', // ⚠️ Permite cualquier origen. Para mayor seguridad en producción, reemplázalo con tu dominio de Vercel (ej. 'https://baristaflow.vercel.app')
@@ -30,12 +30,64 @@ const transporter = nodemailer.createTransport({
 
 // --- RUTAS ---
 
-// Cursos
-app.get('/api/courses', getCourses);
-app.get('/api/courses/:id', getCourseById);
-app.post('/api/courses', createCourse);
-app.put('/api/courses/:id', updateCourse);
-app.delete('/api/courses/:id', deleteCourse);
+// Cursos (Persistent)
+app.get('/api/courses', async (req: any, res: any) => {
+    const courses = await courseService.getCourses();
+    // Filter by authorId if needed (client side filtering is also an option, but server side is better)
+    const authorId = req.query.authorId;
+    if (authorId) {
+        const filtered = courses.filter((c: any) => c.authorId === authorId);
+        return res.status(200).json(filtered);
+    }
+    res.status(200).json(courses);
+});
+
+app.get('/api/courses/:id', async (req: any, res: any) => {
+    const course = await courseService.getCourseById(req.params.id);
+    if (course) {
+        res.status(200).json(course);
+    } else {
+        res.status(404).json({ message: "Curso no encontrado" });
+    }
+});
+
+app.post('/api/courses', async (req: any, res: any) => {
+    const newCourseData = req.body;
+    if (!newCourseData.title || !newCourseData.price) {
+        return res.status(400).json({ message: "Faltan datos obligatorios." });
+    }
+    try {
+        const newCourse = await courseService.createCourse(newCourseData);
+        console.log("✅ Curso creado (DB):", newCourse.title);
+        res.status(201).json(newCourse);
+    } catch (e) {
+        res.status(500).json({ message: "Error creando curso" });
+    }
+});
+
+app.put('/api/courses/:id', async (req: any, res: any) => {
+    try {
+        const updated = await courseService.updateCourse(req.params.id, req.body);
+        if (updated) {
+            console.log("✅ Curso actualizado (DB):", req.params.id);
+            res.status(200).json(updated);
+        } else {
+            res.status(404).json({ message: "Curso no encontrado" });
+        }
+    } catch (e) {
+        res.status(500).json({ message: "Error actualizando curso" });
+    }
+});
+
+app.delete('/api/courses/:id', async (req: any, res: any) => {
+    try {
+        await courseService.deleteCourse(req.params.id);
+        console.log("✅ Curso eliminado (DB):", req.params.id);
+        res.status(200).json({ success: true, message: "Curso eliminado" });
+    } catch (e) {
+        res.status(500).json({ message: "Error eliminando curso" });
+    }
+});
 
 // Productos
 app.get('/api/products', (req: any, res: any) => {
@@ -59,7 +111,7 @@ app.get('/api/blogs/:id', async (req: any, res: any) => {
 });
 
 app.post('/api/blogs', async (req: any, res: any) => {
-    const { title, content, imageUrl, authorId, username, date, excerpt, htmlContent } = req.body;
+    const { title, content, imageUrl, authorId, username, date, excerpt, htmlContent, blocks } = req.body;
 
     if (!title || !content || !authorId) {
         return res.status(400).json({ message: "Faltan campos obligatorios." });
@@ -76,7 +128,8 @@ app.post('/api/blogs', async (req: any, res: any) => {
             likes: 0,
             comments: 0,
             excerpt: excerpt || content.substring(0, 100) + '...',
-            htmlContent
+            htmlContent, // Keeping for legacy/compatibility if needed
+            blocks: blocks || [] // New structured content
         });
         console.log("Blog creado en DB:", title);
         res.status(201).json({ success: true, message: "Blog creado con éxito.", blog: newBlog });
@@ -104,6 +157,95 @@ app.put('/api/blogs/:id', async (req: any, res: any) => {
     } catch (error) {
         console.error("Error updating blog:", error);
         res.status(500).json({ message: "Error al actualizar el blog." });
+    }
+});
+
+app.delete('/api/blogs/:id', async (req: any, res: any) => {
+    const idParam = req.params.id;
+    // Try to parse as int, but keep original if NaN (to allow deleting legacy/string IDs)
+    const parsedId = parseInt(idParam);
+    const id = isNaN(parsedId) ? idParam : parsedId;
+
+    console.log(`[DELETE] Request to delete blog with ID: ${idParam} (Used: ${id})`);
+
+    // Removed strict isNaN check to allow string IDs for cleanup
+    if (!id) {
+        return res.status(400).json({ message: "ID inválido." });
+    }
+
+    try {
+        await blogService.deleteBlog(id);
+        res.status(200).json({ success: true, message: "Blog eliminado con éxito." });
+    } catch (error) {
+        console.error("Error deleting blog:", error);
+        res.status(500).json({ message: "Error al eliminar el blog." });
+    }
+});
+
+// --- ORDENES Y CORREOS ---
+app.post('/api/orders', async (req: any, res: any) => {
+    const { userId, orderId, orderData } = req.body;
+
+    if (!userId || !orderId || !orderData) {
+        return res.status(400).json({ message: "Faltan datos de la orden." });
+    }
+
+    try {
+        // 1. Guardar en Firebase (Usando el servicio admin implícito o cliente si funciona aquí)
+        // Nota: Si 'blogService' ya inicializa firebase, podemos reusar 'db'
+        // Pero para asegurar, usamos la referencia directa si es posible.
+        // Asumimos que el cliente YA guardó en Firebase (para minimizar cambios riesgosos en backend),
+        // O implementamos el guardado aquí.
+        // Dado que el usuario dijo "hice un pedido", el cliente ya lo intenta.
+        // MEJOR ENFOQUE: El cliente llama a esto PARA confirmar y enviar correo.
+
+        // Vamos a re-implementar el guardado aquí para ser seguros, o confiar en el cliente?
+        // El cliente actual guarda en 'orders/uid/orderId'.
+        // Si movemos lógica al backend, es más seguro.
+
+        // Simplemente enviamos el correo aquí por ahora para cumplir el requerimiento #2 rápido.
+        // Y el cliente llamará a este endpoint AL FINALIZAR.
+
+        const { email, fullName, items, total } = orderData;
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email, // Correo del cliente
+            subject: `Confirmación de Pedido #${orderId} - BaristaFlow`,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h1 style="color: #3A1F18;">¡Gracias por tu compra, ${fullName}!</h1>
+                    <p>Tu pedido <strong>#${orderId}</strong> ha sido confirmado y estamos preparándolo.</p>
+                    
+                    <h3 style="border-bottom: 2px solid #EAB308; padding-bottom: 5px;">Resumen del Pedido</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        ${items.map((item: any) => `
+                            <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                <span>${item.name} (x${item.quantity})</span>
+                                <strong>$${(item.price * item.quantity).toLocaleString()}</strong>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    
+                    <div style="margin-top: 20px; text-align: right; font-size: 1.2em;">
+                        <strong>Total Pagado: $${total.toLocaleString()}</strong>
+                    </div>
+                    
+                    <p style="margin-top: 30px; font-size: 0.9em; color: #777;">
+                        Si tienes alguna duda, contáctanos respondiendo a este correo.
+                    </p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`📧 Confirmación de pedido enviada a ${email}`);
+
+        res.status(200).json({ success: true, message: "Orden procesada y correo enviado." });
+
+    } catch (error) {
+        console.error("Error processing order:", error);
+        res.status(500).json({ message: "Error al procesar la orden." });
     }
 });
 

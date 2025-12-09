@@ -4,7 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { courseService, type Course } from '../services/courseService';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext'; // 🚨 Importar useAuth
-import { FaSpinner, FaShoppingCart, FaClock, FaLayerGroup, FaChalkboardTeacher, FaArrowLeft, FaLock } from 'react-icons/fa';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebase';
+import ContentBlockRenderer from '../components/editor/ContentBlockRenderer';
+import { FaSpinner, FaShoppingCart, FaClock, FaLayerGroup, FaChalkboardTeacher, FaArrowLeft, FaLock, FaCheckCircle } from 'react-icons/fa';
 
 const CourseDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -14,6 +17,33 @@ const CourseDetailPage: React.FC = () => {
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isEnrolled, setIsEnrolled] = useState(false);
+
+    // Check Enrollment
+    useEffect(() => {
+        const checkEnrollment = async () => {
+            if (!user || !course) return;
+            try {
+                const ordersRef = ref(database, `orders/${user.uid}`);
+                const snapshot = await get(ordersRef);
+                if (snapshot.exists()) {
+                    const orders = snapshot.val();
+                    const hasPurchased = Object.values(orders).some((order: any) =>
+                        order.items && Array.isArray(order.items) && order.items.some((item: any) =>
+                            String(item.id) === String(course.id)
+                        )
+                    );
+                    setIsEnrolled(hasPurchased);
+                }
+            } catch (error) {
+                console.error("Error checking enrollment:", error);
+            }
+        };
+
+        if (user && course) {
+            checkEnrollment();
+        }
+    }, [user, course]);
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -51,8 +81,7 @@ const CourseDetailPage: React.FC = () => {
 
     // 🚨 Lógica de permisos para ver el contenido HTML
     const isAuthor = user && course.authorId === user.uid;
-    // const isEnrolled = ... (Pendiente de implementar lógica real de inscripción)
-    const canViewContent = isAuthor; // Por ahora solo el autor puede ver el contenido en esta vista
+    const canViewContent = isAuthor || isEnrolled;
 
     return (
         <div className="container mx-auto px-4 py-12">
@@ -80,22 +109,29 @@ const CourseDetailPage: React.FC = () => {
                             <p className="text-gray-700 leading-relaxed text-lg">{course.description}</p>
                         </div>
 
-                        {/* 🚨 RENDERIZADO DE CONTENIDO HTML (IFRAME) 🚨 */}
-                        {course.htmlContent && (
+                        {/* 🚨 RENDERIZADO DE CONTENIDO (BLOQUES O LEGACY HTML) 🚨 */}
+                        {(course.blocks || course.htmlContent) && (
                             <div className="mt-8 border-t pt-8">
                                 <h2 className="text-2xl font-bold text-[#3A1F18] mb-4">Contenido Interactivo / Lección</h2>
 
                                 {canViewContent ? (
                                     <>
-                                        <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-inner">
-                                            <iframe
-                                                srcDoc={course.htmlContent}
-                                                title="Contenido del Curso"
-                                                className="w-full h-[500px]"
-                                                sandbox="allow-scripts" // Permitimos scripts básicos pero aislados
-                                                style={{ border: 'none' }}
-                                            />
-                                        </div>
+                                        {course.blocks && course.blocks.length > 0 ? (
+                                            <div className="bg-white border border-gray-100 rounded-xl p-4">
+                                                <ContentBlockRenderer blocks={course.blocks} />
+                                            </div>
+                                        ) : course.htmlContent ? (
+                                            <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-inner">
+                                                <iframe
+                                                    srcDoc={course.htmlContent}
+                                                    title="Contenido del Curso"
+                                                    className="w-full h-[500px]"
+                                                    sandbox="allow-scripts" // Permitimos scripts básicos pero aislados
+                                                    style={{ border: 'none' }}
+                                                />
+                                            </div>
+                                        ) : null}
+
                                         <p className="text-xs text-gray-500 mt-2 italic">
                                             * Vista previa disponible para el instructor.
                                         </p>
@@ -116,12 +152,18 @@ const CourseDetailPage: React.FC = () => {
                         <div className="bg-amber-50 rounded-xl p-6 shadow-md sticky top-24">
                             <div className="text-3xl font-bold text-[#3A1F18] mb-6 text-center">{course.price}</div>
 
-                            <button
-                                onClick={handleAddToCart}
-                                className="w-full py-4 bg-amber-500 text-[#3A1F18] font-bold rounded-lg shadow-lg hover:bg-amber-600 transform hover:-translate-y-1 transition-all flex justify-center items-center text-lg"
-                            >
-                                <FaShoppingCart className="mr-2" /> Agregar al Carrito
-                            </button>
+                            {isEnrolled ? (
+                                <div className="w-full py-4 bg-green-100 text-green-800 font-bold rounded-lg shadow-sm border border-green-200 flex justify-center items-center text-lg select-none">
+                                    <FaCheckCircle className="mr-2" /> Ya estás inscrito
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="w-full py-4 bg-amber-500 text-[#3A1F18] font-bold rounded-lg shadow-lg hover:bg-amber-600 transform hover:-translate-y-1 transition-all flex justify-center items-center text-lg"
+                                >
+                                    <FaShoppingCart className="mr-2" /> Agregar al Carrito
+                                </button>
+                            )}
 
                             <div className="mt-8 space-y-4 text-gray-700">
                                 <div className="flex items-center">

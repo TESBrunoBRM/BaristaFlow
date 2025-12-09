@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { courseService } from '../services/courseService';
+import ContentBlockEditor from '../components/editor/ContentBlockEditor';
+import type { ContentBlock } from '../types/blog';
 import { FaSpinner, FaCloudUploadAlt, FaMoneyBillWave, FaClock, FaLayerGroup, FaChalkboardTeacher, FaLink, FaImage } from 'react-icons/fa';
 
 const CreateCoursePage: React.FC = () => {
@@ -15,7 +17,9 @@ const CreateCoursePage: React.FC = () => {
     const [price, setPrice] = useState('');
     const [duration, setDuration] = useState('');
     const [level, setLevel] = useState<'Básico' | 'Intermedio' | 'Avanzado'>('Básico');
-    const [htmlContent, setHtmlContent] = useState(''); // 🚨 Nuevo estado para HTML
+
+    // New Blocks State
+    const [blocks, setBlocks] = useState<ContentBlock[]>([]);
 
     // Estados para manejar la imagen (Archivo o URL)
     const [imageType, setImageType] = useState<'file' | 'url'>('url');
@@ -84,7 +88,7 @@ const CreateCoursePage: React.FC = () => {
                 image: finalImageUrl,
                 authorId: user.uid,
                 authorName: user.displayName || user.email || 'Instructor',
-                htmlContent, // 🚨 Incluimos el HTML
+                blocks, // 🚨 NEW: Send blocks
             };
 
             // 3. Enviar a Firebase usando courseService
@@ -103,11 +107,11 @@ const CreateCoursePage: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-16">
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8 md:p-12 border-t-8 border-amber-600">
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-8 md:p-12 border-t-8 border-amber-600">
                 <div className="text-center mb-10">
                     <FaChalkboardTeacher className="text-5xl text-amber-600 mx-auto mb-4" />
                     <h1 className="text-3xl font-extrabold text-[#3A1F18]">Publicar Nuevo Curso</h1>
-                    <p className="text-gray-500 mt-2">Crea contenido para la comunidad de BaristaFlow.</p>
+                    <p className="text-gray-500 mt-2">Crea contenido para la comunidad de BaristaFlow utilizando el nuevo editor de bloques.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -249,43 +253,12 @@ const CreateCoursePage: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Botón Submit */}
-                    {/* 🚨 NUEVO CAMPO: Contenido HTML / Archivo */}
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Contenido Interactivo (HTML)
-                        </label>
-                        <p className="text-xs text-gray-500 mb-2">
-                            Puedes pegar código HTML aquí o subir un archivo .html para tus lecciones.
-                        </p>
-
-                        {/* Input de Archivo */}
-                        <div className="mb-3">
-                            <input
-                                type="file"
-                                accept=".html"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => {
-                                            setHtmlContent(ev.target?.result as string);
-                                        };
-                                        reader.readAsText(file);
-                                    }
-                                }}
-                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                            />
-                        </div>
-
-                        {/* Textarea para edición manual */}
-                        <textarea
-                            name="htmlContent"
-                            value={htmlContent}
-                            onChange={(e) => setHtmlContent(e.target.value)}
-                            placeholder="<h1>Mi Lección</h1><p>Contenido...</p>"
-                            rows={6}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent font-mono text-sm"
+                    {/* EDITOR DE BLOQUES (Sustituye a HTML) */}
+                    <div className="bg-white p-6 rounded-2xl shadow-xl border border-amber-100">
+                        <h2 className="text-xl font-bold text-gray-800 border-b border-gray-100 pb-4 mb-6">Contenido Interactivo / Lecciones</h2>
+                        <ContentBlockEditor
+                            blocks={blocks}
+                            onChange={setBlocks}
                         />
                     </div>
 

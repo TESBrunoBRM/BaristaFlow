@@ -94,6 +94,7 @@ function App() {
           <Route path="/create-blog" element={<ProtectedRoute element={<CreateBlogPage />} />} />
           <Route path="/edit-blog/:id" element={<ProtectedRoute element={<CreateBlogPage />} />} />
           <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
+          <Route path="/profile/:id" element={<ProtectedRoute element={<ProfilePage />} />} />
           <Route path="/create-course" element={<RoleProtectedRoute element={<CreateCoursePage />} allowedRole="educator_approved" />} />
           <Route path="/edit-course/:id" element={<RoleProtectedRoute element={<EditCoursePage />} allowedRole="educator_approved" />} />
 
