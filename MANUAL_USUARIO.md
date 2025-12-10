@@ -47,7 +47,7 @@ Para acceder a funciones avanzadas como compras, cursos o publicaciones, necesit
 
 La barra de navegación superior te da acceso rápido a todas las secciones:
 - **Logo**: Vuelve siempre a la página de inicio.
-- **Buscador**: Encuentra usuarios, blogs, productos o cursos rápidamente.
+- **Buscador Inteligente**: Escribe para ver sugerencias instantáneas de usuarios, cursos y blogs.
 - **Menú Principal**: Enlaces a Recetas, Cursos, Comunidad, etc.
 - **Iconos**:
   - 🔔 **Notificaciones**: Avisos sobre seguidores, likes o actualizaciones.
@@ -82,8 +82,11 @@ Comparte tu voz.
 - **Leer**: Artículos sobre tendencias, orígenes y consejos.
 - **Escribir**:
   1. Ve a "Comunidad" y haz clic en "Crear Publicación".
-  2. Añade un título atractivo y una imagen de portada.
-  3. Escribe tu contenido (soporta formato básico).
+  2. Añade un título atractivo y una imagen de portada (subida o enlace).
+  3. **Editor de Contenido**: Usa nuestro sistema de bloques para estructurar tu post:
+     - 📝 **Texto**: Párrafos con formato rico.
+     - 🖼️ **Imagen**: Inserta fotos entre párrafos.
+     - 💬 **Cita**: Destaca frases memorables.
   4. Publica para que toda la comunidad lo vea.
 
 ## 5. Perfil de Usuario
@@ -91,6 +94,7 @@ Comparte tu voz.
 Tu identidad en BaristaFlow. Accede haciendo clic en tu foto > "Mi Perfil".
 - **Editar Perfil**: Cambia tu foto, nombre y biografía.
 - **Estadísticas**: Visualiza tus seguidores y cursos.
+- **Mis Pedidos**: Revisa el historial de compras y el estado de tus envíos.
 - **Mis Cursos**: Acceso directo a tu formación activa.
 - **Mis Publicaciones**: Gestiona y edita tus blogs.
 
@@ -98,9 +102,10 @@ Tu identidad en BaristaFlow. Accede haciendo clic en tu foto > "Mi Perfil".
 
 ¿Eres un experto? Conviértete en Educador.
 1. En tu perfil, busca la opción **"Convertirme en Educador"**.
-2. Completa la solicitud (actualmente automática para demostración).
-3. Una vez aprobado, verás el botón **"Panel de Educador"**.
-4. **Funciones de Educador**:
+2. **Sube tu certificación**: Adjunta un documento (PDF/Imagen) que valide tu experiencia.
+3. **Revisión**: Tu solicitud quedará en estado "Pendiente" mientras nuestro equipo la verifica (aprox. 48h).
+4. Una vez aprobado, verás el botón **"Panel de Educador"**.
+5. **Funciones de Educador**:
    - Crear nuevos cursos.
    - Subir videos y PDFs.
    - Gestionar estudiantes inscritos.
