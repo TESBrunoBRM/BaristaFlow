@@ -18,7 +18,6 @@
 
   <p>
     <img src="https://img.shields.io/badge/STATUS-EN%20DESARROLLO-orange?style=for-the-badge" alt="Status" />
-    <img src="https://img.shields.io/badge/LICENCIA-MIT-green?style=for-the-badge" alt="License" />
     <img src="https://img.shields.io/badge/VERSION-1.0.0-blue?style=for-the-badge" alt="Version" />
   </p>
 
