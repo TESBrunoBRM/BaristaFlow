@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext'; // 🚨 Importar useAuth
 import { ref, get } from 'firebase/database';
 import { database } from '../firebase';
 import ContentBlockRenderer from '../components/editor/ContentBlockRenderer';
-import { FaSpinner, FaShoppingCart, FaClock, FaLayerGroup, FaChalkboardTeacher, FaArrowLeft, FaLock, FaCheckCircle } from 'react-icons/fa';
+import { FaSpinner, FaShoppingCart, FaClock, FaLayerGroup, FaChalkboardTeacher, FaArrowLeft, FaLock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 
 const CourseDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -94,9 +94,18 @@ const CourseDetailPage: React.FC = () => {
                 <div className="relative h-64 md:h-96">
                     <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-                        <div className="p-8 text-white">
-                            <h1 className="text-4xl font-extrabold mb-2">{course.title}</h1>
-                            <p className="text-lg opacity-90">{course.level} • {course.duration}</p>
+                        <div className="p-8 text-white w-full">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h1 className="text-4xl font-extrabold mb-2">{course.title}</h1>
+                                    <p className="text-lg opacity-90">{course.level} • {course.duration}</p>
+                                </div>
+                                {course.isArchived && (
+                                    <div className="bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow-lg flex items-center">
+                                        <FaExclamationTriangle className="mr-2" /> Curso Archivado
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

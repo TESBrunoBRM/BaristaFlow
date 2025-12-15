@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { database } from '../firebase';
+import { ref, onValue } from 'firebase/database';
 import { useAuth } from '../context/AuthContext';
 import { FaBookReader, FaPlayCircle, FaCheckCircle, FaChalkboardTeacher, FaSpinner, FaFileUpload, FaExclamationTriangle, FaPlusCircle, FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
-
-// Definición del tipo de Curso
-interface Course {
-  id: number;
-  title: string;
-  image: string;
-  description: string;
-  progress?: number;
-  nextLesson?: string;
-  authorId?: string;
-}
+import { courseService, type Course } from '../services/courseService';
 
 const LearningEnvironment: React.FC = () => {
   const { user, userRole, userToken } = useAuth();
@@ -25,47 +16,73 @@ const LearningEnvironment: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [uploading, setUploading] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
+    if (!user) return;
 
+    setLoading(true);
+    setError(null);
+
+    // 1. Fetch Enrolled Courses (From Firebase Orders)
+    const ordersRef = ref(database, `orders/${user.uid}`);
+    const unsubscribeOrders = onValue(ordersRef, async (snapshot) => {
       try {
-        setLoading(true);
-        setError(null);
+        const data = snapshot.val();
+        if (data) {
+          // Extract all items from all orders
+          const allItems: any[] = [];
+          Object.values(data).forEach((order: any) => {
+            if (order.items && Array.isArray(order.items)) {
+              allItems.push(...order.items);
+            }
+          });
 
-        // A. Cursos Inscritos (Estudiante) - Vacío por ahora
-        setEnrolledCourses([]);
+          // Get unique Course IDs
+          const uniqueCourseIds = Array.from(new Set(allItems.map(item => item.id)));
 
-        // B. Cursos Creados (Educador)
-        if (isEducator) {
-          const response = await fetch(`${API_BASE_URL}/api/courses`);
-
-          if (!response.ok) {
-            throw new Error('Error al conectar con el servidor de cursos.');
+          // Fetch enrolled courses via new Batch Endpoint (ignores archival status)
+          if (uniqueCourseIds.length > 0) {
+            const courses = await courseService.getEnrolledCourses(uniqueCourseIds);
+            setEnrolledCourses(courses);
+          } else {
+            setEnrolledCourses([]);
           }
 
-          const allCourses: Course[] = await response.json();
-
-          // Filtrar cursos creados por el usuario actual
-          const myCourses = allCourses.filter(course => course.authorId === user.uid);
-
-          setCreatedCourses(myCourses);
+        } else {
+          setEnrolledCourses([]);
         }
-
       } catch (err) {
-        console.error(err);
-        setError('No se pudo cargar la información. Verifica que el servidor backend esté corriendo.');
+        console.error("Error fetching enrolled courses:", err);
       } finally {
-        setLoading(false);
+        if (!isEducator) setLoading(false);
+      }
+    }, (error) => {
+      console.error("Firebase error:", error);
+      if (!isEducator) setLoading(false);
+    });
+
+    // 2. Fetch Created Courses (If Educator)
+    const fetchEducatorCourses = async () => {
+      if (isEducator) {
+        try {
+          const myCourses = await courseService.getCoursesByAuthor(user.uid);
+          setCreatedCourses(myCourses);
+        } catch (err) {
+          console.error(err);
+          setError('No se pudo cargar la información de educador.');
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
-    fetchData();
+    fetchEducatorCourses();
+
+    return () => unsubscribeOrders();
   }, [user, isEducator]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, courseId: number) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, courseId: string) => {
     const file = e.target.files?.[0];
     if (!file || !userToken) return;
 
@@ -199,9 +216,10 @@ const LearningEnvironment: React.FC = () => {
                   <h3 className="text-xl font-bold text-gray-800 mb-2">{course.title}</h3>
                   <p className="text-sm text-gray-500 mb-4">Siguiente: Lección pendiente...</p>
                 </div>
-                <button className="w-full py-2 bg-[#3A1F18] text-white font-bold rounded-lg hover:bg-amber-900 transition-colors flex items-center justify-center">
+
+                <Link to={`/courses/${course.id}`} className="w-full py-2 bg-[#3A1F18] text-white font-bold rounded-lg hover:bg-amber-900 transition-colors flex items-center justify-center">
                   <FaPlayCircle className="mr-2" /> Continuar Aprendiendo
-                </button>
+                </Link>
               </div>
             </div>
           ))}

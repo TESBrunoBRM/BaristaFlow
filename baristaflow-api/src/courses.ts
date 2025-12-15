@@ -12,6 +12,7 @@ export interface Course {
     authorId?: string;
     htmlContent?: string; // Legacy
     blocks?: any[]; // NEW: Structured content blocks
+    isArchived?: boolean; // NEW: Soft delete flag
 }
 
 // 🚨 Datos Iniciales (In-Memory Database)
@@ -58,11 +59,16 @@ let courses: Course[] = [
 
 const getCourses = (req: Request, res: Response) => {
     const authorId = req.query.authorId as string;
+
+    // Si se pide por autor, devolvemos TODOS (incluidos archivados) para que el profesor los vea
     if (authorId) {
         const filtered = courses.filter(c => c.authorId === authorId);
         return res.status(200).json(filtered);
     }
-    res.status(200).json(courses);
+
+    // Para el catálogo público, filtramos los archivados
+    const activeCourses = courses.filter(c => !c.isArchived);
+    res.status(200).json(activeCourses);
 };
 
 const getCourseById = (req: Request, res: Response) => {
@@ -74,6 +80,20 @@ const getCourseById = (req: Request, res: Response) => {
     } else {
         res.status(404).json({ message: "Curso no encontrado" });
     }
+};
+
+const getEnrolledCourses = (req: Request, res: Response) => {
+    const { courseIds } = req.body; // Expecting array of string/number IDs
+
+    if (!Array.isArray(courseIds)) { // Fix: courseIds check
+        return res.status(400).json({ message: "Se requiere un array de IDs de cursos." });
+    }
+
+    // Find all courses that match the IDs, IGNORING isArchived status
+    const enrolledCourses = courses.filter(c => courseIds.includes(c.id) || courseIds.includes(String(c.id)));
+
+    // We do NOT filter by isArchived here, because the user has rights to them.
+    res.status(200).json(enrolledCourses);
 };
 
 const createCourse = (req: Request, res: Response) => {
@@ -114,14 +134,15 @@ const updateCourse = (req: Request, res: Response) => {
 
 const deleteCourse = (req: Request, res: Response) => {
     const id = req.params.id;
-    const initialLength = courses.length;
-    courses = courses.filter(c => c.id != id);
+    // SOFT DELETE: No borramos, solo marcamos como archivado
+    const index = courses.findIndex(c => c.id == id);
 
-    if (courses.length < initialLength) {
-        console.log("✅ Curso eliminado (RAM):", id);
-        res.status(200).json({ success: true, message: "Curso eliminado" });
+    if (index !== -1 && courses[index]) {
+        courses[index]!.isArchived = true;
+        console.log("✅ Curso archivado (Soft Delete):", id);
+        res.status(200).json({ success: true, message: "Curso archivado correctamente" });
     } else {
-        res.status(404).json({ message: "Curso no encontrado para eliminar" });
+        res.status(404).json({ message: "Curso no encontrado para archivar" });
     }
 };
 
@@ -130,5 +151,6 @@ module.exports = {
     getCourseById,
     createCourse,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    getEnrolledCourses
 };

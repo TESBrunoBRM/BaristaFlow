@@ -99,7 +99,7 @@ function App() {
           <Route path="/edit-course/:id" element={<RoleProtectedRoute element={<EditCoursePage />} allowedRole="educator_approved" />} />
 
           {/* --- RUTAS DE ROLES --- */}
-          <Route path="/apply-educator" element={<RoleProtectedRoute element={<EducatorApplyPage />} allowedRole="normal" />} />
+          <Route path="/educator-apply" element={<RoleProtectedRoute element={<EducatorApplyPage />} allowedRole="normal" />} />
           <Route path="/educator-panel" element={<RoleProtectedRoute element={<EducatorPanel />} allowedRole="educator_approved" />} />
 
           {/* 🚨 NUEVA RUTA: AMBIENTE DE APRENDIZAJE 🚨 */}

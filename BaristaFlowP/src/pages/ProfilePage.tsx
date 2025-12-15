@@ -41,6 +41,8 @@ const MyOrdersSection: React.FC = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 3;
 
     useEffect(() => {
         if (!user) return;
@@ -67,6 +69,20 @@ const MyOrdersSection: React.FC = () => {
         return () => unsubscribe();
     }, [user]);
 
+    // Calcular índices para paginación
+    const indexOfLastOrder = currentPage * itemsPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - itemsPerPage;
+    const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+    const totalPages = Math.ceil(orders.length / itemsPerPage);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
+
     if (loading) return <div className="text-center py-4"><FaSpinner className="animate-spin inline" /> Cargando pedidos...</div>;
 
     if (orders.length === 0) {
@@ -75,8 +91,8 @@ const MyOrdersSection: React.FC = () => {
 
     return (
         <div className="space-y-4">
-            {orders.map((order) => (
-                <div key={order.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            {currentOrders.map((order) => (
+                <div key={order.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm transition-all hover:shadow-md">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <h3 className="font-bold text-gray-800">Pedido #{order.id}</h3>
@@ -102,6 +118,35 @@ const MyOrdersSection: React.FC = () => {
                     </div>
                 </div>
             ))}
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 pt-4">
+                    <button
+                        onClick={handlePrevPage}
+                        disabled={currentPage === 1}
+                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${currentPage === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            }`}
+                    >
+                        Anterior
+                    </button>
+                    <span className="text-gray-600 font-medium">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                        onClick={handleNextPage}
+                        disabled={currentPage === totalPages}
+                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${currentPage === totalPages
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            }`}
+                    >
+                        Siguiente
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

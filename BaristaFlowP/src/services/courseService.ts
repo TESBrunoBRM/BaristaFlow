@@ -15,6 +15,7 @@ export interface Course {
     createdAt?: number;
     htmlContent?: string; // Contenido HTML personalizado
     blocks?: any[]; // NEW: Structured content blocks
+    isArchived?: boolean; // NEW: Indica si el curso fue archivado (Soft Delete)
 }
 
 const API_URL = `${API_BASE_URL}/api/courses`;
@@ -75,13 +76,25 @@ export const courseService = {
         }
     },
 
-    // 6. Eliminar Curso
-    deleteCourse: async (courseId: string) => {
+    // 6. Archivar Curso (Soft Delete)
+    archiveCourse: async (courseId: string) => {
         try {
+            // Se usa el endpoint DELETE pero el backend solo lo marca como archivado
             await axios.delete(`${API_URL}/${courseId}`);
         } catch (error) {
-            console.error("Error deleting course:", error);
+            console.error("Error archiving course:", error);
             throw error;
+        }
+    },
+
+    // 7. Obtener Cursos Inscritos (Batch - Ignorando estado)
+    getEnrolledCourses: async (courseIds: string[]) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/courses/enrolled`, { courseIds });
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching enrolled courses:", error);
+            return [];
         }
     }
 };

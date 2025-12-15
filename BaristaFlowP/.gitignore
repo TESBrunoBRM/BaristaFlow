@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Security
+.env
+add_env.ps1

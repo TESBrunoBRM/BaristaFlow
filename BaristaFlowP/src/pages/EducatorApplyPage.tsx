@@ -12,6 +12,8 @@ import {
 // import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'; // REMOVED
 import { database } from '../firebase';
 import { ref as dbRef, update } from 'firebase/database';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -93,12 +95,26 @@ const EducatorApplyPage: React.FC = () => {
             setProgress(100);
 
             // Actualizar datos del usuario en Realtime Database
+            // Actualizar datos del usuario en Realtime Database
             const userRef = dbRef(database, `users/${user.uid}`);
             await update(userRef, {
                 role: 'educator_pending',
                 verificationDocumentURL: base64String, // Storing Base64 directly
                 applicationDate: new Date().toISOString(),
             });
+
+            // 📧 Send Email Notification to Admin via Backend
+            try {
+                await axios.post(`${API_BASE_URL}/api/educator-apply`, {
+                    name: user.displayName || 'Usuario Desconocido',
+                    email: user.email,
+                    docFile: base64String,
+                    docName: file.name
+                });
+            } catch (emailError) {
+                console.error("Error sending email notification:", emailError);
+                // Non-blocking error, user still applied successfully
+            }
 
             setUploadSuccess(true);
             setLoading(false);

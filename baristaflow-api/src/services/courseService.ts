@@ -97,14 +97,38 @@ const updateCourse = async (id: string | number, courseData: any) => {
     }
 };
 
+// SOFT DELETE: Mark as archived instead of removing
 const deleteCourse = async (id: string | number) => {
     try {
         const dbRef = ref(db, `${COLLECTION_NAME}/${id}`);
-        await remove(dbRef);
+        // Check if exists first
+        const snapshot = await get(dbRef);
+        if (!snapshot.exists()) return false;
+
+        // Update isArchived flag
+        await set(child(dbRef, 'isArchived'), true);
         return true;
     } catch (error) {
-        console.error("Error deleting course:", error);
+        console.error("Error archiving course:", error);
         throw error;
+    }
+};
+
+const getEnrolledCourses = async (courseIds: (string | number)[]) => {
+    if (!courseIds || courseIds.length === 0) return [];
+
+    try {
+        // Option A: Fetch all and filter (Inefficient but simple for small datasets)
+        // Option B: Parallel fetches by ID (Better for Firebase Realtime DB)
+
+        const promises = courseIds.map(id => getCourseById(id));
+        const results = await Promise.all(promises);
+
+        // Filter out nulls (failed fetches)
+        return results.filter(course => course !== null);
+    } catch (error) {
+        console.error("Error fetching enrolled courses:", error);
+        return [];
     }
 };
 
@@ -113,5 +137,6 @@ module.exports = {
     getCourseById,
     createCourse,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    getEnrolledCourses
 };

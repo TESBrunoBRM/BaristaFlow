@@ -10,7 +10,7 @@ import {
     FaFileUpload,
     FaExclamationTriangle,
     FaEdit,
-    FaTrash
+    FaArchive // Changed from FaTrash
 } from 'react-icons/fa';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -64,16 +64,19 @@ const EducatorPanel: React.FC = () => {
         }
     };
 
-    const handleDeleteCourse = async (courseId: string) => {
-        if (!confirm('¿Estás seguro de que quieres eliminar este curso? Esta acción no se puede deshacer.')) return;
+    const handleArchiveCourse = async (courseId: string) => {
+        if (!confirm('¿Estás seguro de que quieres archivar este curso? Dejará de aparecer en el catálogo público, pero los alumnos actuales mantendrán su acceso.')) return;
 
         try {
-            await courseService.deleteCourse(courseId);
-            setMyCourses(prev => prev.filter(c => c.id !== courseId));
-            alert('Curso eliminado.');
+            await courseService.archiveCourse(courseId);
+            // Actualizamos el estado local para reflejar el cambio (Soft delete visual)
+            setMyCourses(prev => prev.map(c =>
+                c.id === courseId ? { ...c, isArchived: true } : c
+            ));
+            alert('Curso archivado correctamente.');
         } catch (error) {
             console.error(error);
-            alert('Error al eliminar el curso.');
+            alert('Error al archivar el curso.');
         }
     };
 
@@ -141,11 +144,14 @@ const EducatorPanel: React.FC = () => {
             ) : myCourses.length > 0 ? (
                 <div className="space-y-4">
                     {myCourses.map(course => (
-                        <div key={course.id} className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div key={course.id} className={`bg-white p-6 rounded-xl shadow-md border ${course.isArchived ? 'border-gray-300 bg-gray-50 opacity-80' : 'border-gray-100'} flex flex-col md:flex-row justify-between items-center gap-4`}>
                             <div className="flex items-center gap-4 w-full md:w-auto">
-                                <img src={course.image} alt={course.title} className="w-16 h-16 rounded object-cover shadow-sm" />
+                                <img src={course.image} alt={course.title} className="w-16 h-16 rounded object-cover shadow-sm grayscale-[0.2]" />
                                 <div className="min-w-0">
-                                    <h3 className="font-bold text-lg text-gray-800 truncate">{course.title}</h3>
+                                    <h3 className="font-bold text-lg text-gray-800 truncate flex items-center gap-2">
+                                        {course.title}
+                                        {course.isArchived && <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full border border-gray-300">Archivado</span>}
+                                    </h3>
                                     <p className="text-sm text-gray-500 line-clamp-1">{course.description}</p>
                                 </div>
                             </div>
@@ -170,10 +176,12 @@ const EducatorPanel: React.FC = () => {
                                 </label>
 
                                 <button
-                                    onClick={() => handleDeleteCourse(course.id)}
-                                    className="flex-1 md:flex-none px-4 py-2 bg-red-100 text-red-700 font-semibold rounded hover:bg-red-200 transition-colors flex items-center justify-center"
+                                    onClick={() => handleArchiveCourse(course.id)}
+                                    className="flex-1 md:flex-none px-4 py-2 bg-red-50 text-red-600 font-semibold rounded hover:bg-red-100 transition-colors flex items-center justify-center"
+                                    title={course.isArchived ? "Curso ya archivado" : "Archivar curso"}
+                                    disabled={course.isArchived}
                                 >
-                                    <FaTrash />
+                                    <FaArchive />
                                 </button>
                             </div>
                         </div>
