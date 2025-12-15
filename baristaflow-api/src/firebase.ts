@@ -16,13 +16,13 @@ if (!global.fetch) {
 dotenv.config();
 
 const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY || "AIzaSyC7aj3cnvSYdaho_upu_TUqpo2XDN4VrqE",
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "baristaflow-93ac0.firebaseapp.com",
-    databaseURL: process.env.FIREBASE_DATABASE_URL || "https://baristaflow-93ac0-default-rtdb.firebaseio.com",
-    projectId: process.env.FIREBASE_PROJECT_ID || "baristaflow-93ac0",
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "927603988215",
-    appId: process.env.FIREBASE_APP_ID || "1:927603988215:web:e87c5f3fa71c0a470d65f2",
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID || "G-VTZSVCQPXH"
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
 
 let app;
